@@ -1,0 +1,16 @@
+{
+	"name": "dev/bg_sharer_mu",
+	"description": "Shows related products in a popup on the checkout page",
+	"authors": [
+		{
+			"name": "Aristides",
+			"email": "aristidesgp@gmail.com"
+		}
+	],
+	"require": {},
+	"autoload": {
+		"psr-4": {
+			"LLKI\\Inc\\": "./inc"
+		}
+	}
+}
