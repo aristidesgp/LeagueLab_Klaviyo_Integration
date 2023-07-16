@@ -17,7 +17,7 @@ class Settings
 	{
 		add_action('admin_menu', array($this, 'add_configuration_menus'));
 		add_action('admin_init', array($this, 'register_settings'));
-		add_action('init', array($this, 'llki_Sincro'));
+		add_action('init', array($this, 'llki_SincroByLeagueId'));
 	}
 
 	// Add configuration menus
@@ -50,6 +50,7 @@ class Settings
 			array($this, 'display_klaviyo_configuration') // Use $this to access the function within the class
 		);
 	}
+
 	public function display_league_lab_klaviyo_configuration()
 	{
 ?>
@@ -77,11 +78,11 @@ class Settings
 	?>
 		<div class="wrap">
 			<h1>League Lab Configuration</h1>
-			<form method="post" action="options.php">
+			<form method="post" action="options.php" id="llki_ll_form">
 				<?php
 				settings_fields('league_lab_section');
 				do_settings_sections('league-lab');
-				
+
 				submit_button();
 				?>
 			</form>
@@ -145,15 +146,17 @@ class Settings
 
 		/* add_settings_field(
 			'll_active_leagues',              // Field ID
-			'Active Leagues',                         // Field label
+			'Leagues',                         // Field label
 			array($this, 'display_active_leagues'), // Function to display the field
 			'league-lab',                             // Page slug where the field will be shown
 			'league_lab_section',                      // ID of the section to which the field belongs
-			//array('description' => 'Enter each league name on a separate line.') // Description for the field
-		);
-		register_setting('league_lab_section', 'll_active_leagues'); */
-
+			array('description' => 'Please select active leagues.') // Description for the field
+		); */
+		register_setting('league_lab_section', 'll_active_leagues');
+		
 		register_setting('league_lab_section', 'league_lab_active_leagues');
+		
+		register_setting('league_lab_section', 'active_leagues_type');
 
 		register_setting('league_lab_section', 'league_lab_site');
 
@@ -200,12 +203,12 @@ class Settings
 		register_setting('klaviyo_section', 'klaviyo_list_id');
 	}
 	// Display the active leagues section
-	public function display_active_leagues()
+	public function display_active_leagues($args)
 	{
-		/* // Get all leagues (assuming they are stored in an array called $leagues)		
+		// Get all leagues (assuming they are stored in an array called $leagues)		
 		$league_lab_api_key = get_option('league_lab_api_key');
 		$site = get_option('league_lab_site');
-		$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);	
+		$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);
 
 		$activeLeagues = get_option('ll_active_leagues'); // Example: Array of active league IDs
 
@@ -220,11 +223,14 @@ class Settings
 			if (is_array($activeLeagues) && in_array($leagueId, $activeLeagues)) {
 				echo ' checked';
 			}
-			echo '> ' . esc_html($leagueName);
+			echo '> ' . esc_html($leagueName) . ' => ' . esc_html($leagueId);
 			echo '</label><br>';
 		}
 
-		echo '</div>'; */
+		echo '</div>';
+		if (isset($args['description'])) {
+			echo '<p class="description" style="margin-top:15px;">' . esc_html($args['description']) . '</p>';
+		}
 	}
 
 	// Función para guardar el array de ligas activas
@@ -256,12 +262,55 @@ class Settings
 		$active_leagues = get_option('league_lab_active_leagues');
 		$active_leagues = !empty($active_leagues) ? explode("\n", $active_leagues) : array();
 
-		echo '<textarea name="league_lab_active_leagues" rows="5" cols="50">' . esc_textarea(implode("\n", $active_leagues)) . '</textarea>';
+		$active_leagues_type = get_option('active_leagues_type');
 
-		if (isset($args['description'])) {
-			echo '<p class="description">' . esc_html($args['description']) . '</p>';
+		echo '<label for="active_leagues_type">' . esc_html__('Active Leagues Type:', LLKI_PLUGIN_URL) . '</label><br>';
+		echo '<select name="active_leagues_type" id="active_leagues_type" style="margin-top:10px;">';
+		echo '<option value="1" ' . selected($active_leagues_type, '1', false) . '>' . esc_html__('Select from List', LLKI_PLUGIN_URL) . '</option>';
+		echo '<option value="2" ' . selected($active_leagues_type, '2', false) . '>' . esc_html__('Enter Manually', LLKI_PLUGIN_URL) . '</option>';
+		echo '</select>';
+
+		echo '<br><br>';
+
+		$divManualLeague=$active_leagues_type==='2'?'<div id="manual_active_leagues">':'<div id="manual_active_leagues" style="display: none;">';
+		echo $divManualLeague;
+		echo '<textarea name="league_lab_active_leagues" rows="5" cols="50">' . esc_textarea(implode("\n", $active_leagues)) . '</textarea>';
+		echo '<p class="description">Enter each league name on a separate line.</p>';
+		echo '</div>';
+	
+		// Display the select field using the $leagues array
+		$league_lab_api_key = get_option('league_lab_api_key');
+		$site = get_option('league_lab_site');
+		$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);
+
+		$activeLeagues = get_option('ll_active_leagues'); // Example: Array of active league IDs
+
+		$divListLeague=$active_leagues_type==='1'?'<div id="list_active_leagues">':'<div id="list_active_leagues" style="display: none;">';
+		echo $divListLeague;
+		echo '<div style="max-height: 500px; overflow-y: scroll;">'; // CSS styles for the scroll
+
+		foreach ($leagues->leagues as $league) {
+			$leagueId = $league->id;
+			$leagueName = $league->name;
+
+			echo '<label>';
+			echo '<input type="checkbox" name="ll_active_leagues[]" value="' . esc_attr($leagueId) . '"';
+			if (is_array($activeLeagues) && in_array($leagueId, $activeLeagues)) {
+				echo ' checked';
+			}
+			echo '> ' . esc_html($leagueName) . ' => ' . esc_html($leagueId);
+			echo '</label><br>';		
+
+						
 		}
+		echo '</div>';
+		echo '<p class="description" style="margin-top:15px;">Please select active leagues.</p>';
+		echo '</div>';
+		echo '<input type="hidden" id="active_l_t_h" name="active_leagues_type" value="' . esc_attr($active_leagues_type) . '">';
+		
+		
 	}
+
 
 	// Display the Klaviyo API Key field
 	public function display_klaviyo_api_key_field()
@@ -283,11 +332,224 @@ class Settings
 		echo '<input type="checkbox" id="klaviyo_add_with_consent" name="klaviyo_add_with_consent" value="1" ' . checked($add_with_consent, 1, false) . ' />';
 	}
 
-	public function llki_Sincro()
+	public function llki_SincroByLeagueName()
 	{
 		try {
-			
-			return;			
+			//League Lab vars
+			$league_lab_api_key = get_option('league_lab_api_key');
+			$site = get_option('league_lab_site');
+			$active_leagues = get_option('league_lab_active_leagues');
+			$active_leagues = !empty($active_leagues) ? explode("\n", $active_leagues) : array();
+			$active_leagues = array_map('trim', $active_leagues);
+
+			//Klaviyo vars
+			$klaviyo_api_key = get_option('klaviyo_api_key');
+			$klaviyo_list_id = get_option('klaviyo_list_id');
+			$add_with_consent = get_option('klaviyo_add_with_consent');
+
+
+			//get all leagues
+			$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);
+
+			if (isset($leagues->leagues)) {
+
+				$profilesToRegister = array();
+
+				$profilesNumber = $add_with_consent == 1 ? 100 : 1000;
+
+				foreach ($leagues->leagues as $keyl => $league) {
+
+					foreach ($active_leagues as $key => $active) {
+
+						if (stripos($league->name, $active) !== false) {
+
+							$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $league->id);
+
+							foreach ($teamsByLeague->teams as $keyt => $team) {
+
+								foreach ($team->players as $keyp => $player) {
+
+									$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
+
+									if (count($profile->data) == 0) {
+										//add new
+										$arguments = [
+											'email'			=>	$player->email,
+											'phone'			=>	$player->phone,
+											'first_name'	=>	$player->first_name,
+											'last_name'		=>	$player->last_name,
+											'league_name'	=>	$league->name,
+											'team_name'		=>	$team->team_name,
+											'is_captain'	=>	$player->captain,
+											//'team_status'	=>	'Active'
+										];
+										//$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);							
+									} else {
+										//update
+										$arguments = [
+											'email'			=>	$player->email,
+											'phone'			=>	$player->phone,
+											'first_name'	=>	$player->first_name,
+											'last_name'		=>	$player->last_name,
+											'league_name'	=>	$league->name,
+											'team_name'		=>	$team->team_name,
+											'is_captain'	=>	$player->captain,
+											//'team_status'	=>	'Active',
+											'profile_id'	=>	$profile->data[0]->id
+										];
+										//$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
+									}
+
+									if (count($profilesToRegister) == $profilesNumber) {
+										if ($add_with_consent == 1) {
+											//$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+										} else {
+											//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+										}
+										var_dump(count($profilesToRegister));
+										$profilesToRegister = array();
+									} else {
+										if ($add_with_consent == 1) {
+											$prof = array(
+												'channels' => array(
+													'email' => array('MARKETING'),
+													'sms' => array('MARKETING')
+												),
+												'email' => $arguments['email'],
+												'phone_number' => $arguments['phone'],
+												'profile_id' => $profile->data[0]->id
+											);
+										} else {
+											$prof = array(
+												'type' => 'profile',
+												'id' => $profile->data[0]->id
+											);
+										}
+										$profilesToRegister[] = $prof;
+									}
+								}
+							}
+							break;
+						}
+					}
+				}
+				if (count($profilesToRegister) > 0 && count($profilesToRegister) < $profilesNumber) {
+
+					if ($add_with_consent == 1) {
+						//$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+					} else {
+						//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+					}
+					var_dump(count($profilesToRegister));
+				}
+			} else {
+				Logs::register(json_encode($leagues));
+			}
+		} catch (\Throwable $th) {
+			Logs::register(json_encode($th->getMessage()));
+		}
+	}
+
+	public function llki_SincroByLeagueId()
+	{
+		try {
+			return;
+			//League Lab vars
+			$league_lab_api_key = get_option('league_lab_api_key');
+			$site = get_option('league_lab_site');
+			$activeLeagues = get_option('ll_active_leagues');
+
+
+			//Klaviyo vars
+			$klaviyo_api_key = get_option('klaviyo_api_key');
+			$klaviyo_list_id = get_option('klaviyo_list_id');
+			$add_with_consent = get_option('klaviyo_add_with_consent');
+
+			$profilesToRegister = array();
+
+			$profilesNumber = $add_with_consent == 1 ? 100 : 1000;
+
+			foreach ($activeLeagues as $key => $active) {
+
+				$league = Helper::get_LeagueLabLeaguesById($site, $league_lab_api_key, $active)->leagues[0];
+
+				$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $active);
+
+				foreach ($teamsByLeague->teams as $keyt => $team) {
+
+					foreach ($team->players as $keyp => $player) {
+
+						$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
+
+						if (count($profile->data) == 0) {
+							//add new
+							$arguments = [
+								'email'			=>	$player->email,
+								'phone'			=>	$player->phone,
+								'first_name'	=>	$player->first_name,
+								'last_name'		=>	$player->last_name,
+								'league_name'	=>	$league->name,
+								'team_name'		=>	$team->team_name,
+								'is_captain'	=>	$player->captain,
+								//'team_status'	=>	'Active'
+							];
+							//$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);							
+						} else {
+							//update
+							$arguments = [
+								'email'			=>	$player->email,
+								'phone'			=>	$player->phone,
+								'first_name'	=>	$player->first_name,
+								'last_name'		=>	$player->last_name,
+								'league_name'	=>	$league->name,
+								'team_name'		=>	$team->team_name,
+								'is_captain'	=>	$player->captain,
+								//'team_status'	=>	'Active',
+								'profile_id'	=>	$profile->data[0]->id
+							];
+							//$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
+						}
+
+						if (count($profilesToRegister) == $profilesNumber) {
+							if ($add_with_consent == 1) {
+								//$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+							} else {
+								//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+							}
+							var_dump(count($profilesToRegister));
+							$profilesToRegister = array();
+						} else {
+							if ($add_with_consent == 1) {
+								$prof = array(
+									'channels' => array(
+										'email' => array('MARKETING'),
+										'sms' => array('MARKETING')
+									),
+									'email' => $arguments['email'],
+									'phone_number' => $arguments['phone'],
+									'profile_id' => $profile->data[0]->id
+								);
+							} else {
+								$prof = array(
+									'type' => 'profile',
+									'id' => $profile->data[0]->id
+								);
+							}
+							$profilesToRegister[] = $prof;
+						}
+					}
+				}
+			}
+
+			if (count($profilesToRegister) > 0 && count($profilesToRegister) < $profilesNumber) {
+
+				if ($add_with_consent == 1) {
+					//$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+				} else {
+					//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+				}
+				var_dump(count($profilesToRegister));
+			}
 		} catch (\Throwable $th) {
 			Logs::register(json_encode($th->getMessage()));
 		}
