@@ -12,3 +12,56 @@ jQuery(document).ready(function($) {
 		}
 	});
 });
+
+function syncro() {
+    jQuery('#manual-sync-button').prop('disabled', true);
+    var spinner = document.getElementById('spinner');
+    var fechaHoraActual = new Date();
+    spinner.style.display = 'block';
+    showProgressMessage('Starting manual synchronization at ' + fechaHoraActual + ' ...');
+
+    var syncPromise = new Promise(function(resolve, reject) {
+        jQuery.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'manual_sync' 
+            },
+            success: function(response) {
+				var data = JSON.parse(response);				
+                if (data.success) {                    
+					resolve(data.data);
+                } else {
+					console.log(response);
+                    reject(data.data);
+                }
+            },
+            error: function(error) {
+				console.log(error);
+                reject(error);
+            }
+        });
+    });
+
+    syncPromise.then(function(additionalData) {
+		console.log(additionalData);      
+		showProgressMessage('Processed leagues => ' + additionalData.leagues);
+		showProgressMessage('Processed teams => ' + additionalData.teams);
+		showProgressMessage('Processed players => ' + additionalData.players);
+        showProgressMessage('Synchronization completed.');
+        jQuery('#manual-sync-button').prop('disabled', false);
+        spinner.style.display = 'none';
+    }).catch(function(error) {
+        showProgressMessage('Error occurred during synchronization:', error);
+        jQuery('#manual-sync-button').prop('disabled', false);
+        spinner.style.display = 'none';
+    });
+}
+
+function showProgressMessage(message) {
+	var progressDiv = document.getElementById("sync-progress");
+	var messageElement = document.createElement("p");
+	messageElement.textContent = message;
+	progressDiv.appendChild(messageElement);
+}
+

@@ -8,22 +8,35 @@
 
 namespace LLKI\Inc\Base;
 
+use LLKI\Inc\Base\Logs;
+use LLKI\Inc\Util\Helper;
 class Sincro
 {
 
     public function register() {
 
         add_action('llki_daily_sync_event', array($this, 'llki_run_daily_sync'));
+        
+        add_action('llki_ten_minutes_event', array($this, 'ten_min'));
+        
+        add_action('llki_one_hour_event', array($this, 'hour_reg'));
 
     }
 
-    public function llki_run_daily_sync() {
+    public function ten_min(){
+        Logs::register("Ten minutes Cron");
+    }
+    public function hour_reg(){
+        Logs::register("1 Hour Cron");
+    }
+
+    public function llki_run_daily_sync() {        
 
 		$active_leagues_type = get_option('active_leagues_type');
-        if($active_leagues_type===2){
-            $this->llki_sync_by_name();
+        if($active_leagues_type==='2'){
+            return $this->llki_sync_by_name();
         }else{
-            $this->llki_sync_by_id();
+            return $this->llki_sync_by_id();
         }
         
     }
@@ -45,6 +58,9 @@ class Sincro
 			/* $league = Helper::get_LeagueLabLeaguesById($site, $league_lab_api_key,60533);
 			var_dump($league->leagues[0]->name);
 			return; */
+            $leaguesNumber=0;
+            $teamsNumber=0;
+            $playersNumber=0;
 
 			//get all leagues
 			$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);
@@ -60,12 +76,18 @@ class Sincro
 					foreach ($active_leagues as $key => $active) {
 						
 						if (stripos( $league->name,$active) !== false) {
-							
+
+							$leaguesNumber=$leaguesNumber+1;
+
 							$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $league->id);
 
 							foreach ($teamsByLeague->teams as $keyt => $team) {
-								
+
+								$teamsNumber=$teamsNumber+1;
+
 								foreach ($team->players as $keyp => $player) {
+
+                                    $playersNumber=$playersNumber+1;
 
 									$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
 
@@ -104,7 +126,7 @@ class Sincro
 										} else {
 											//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 										}										
-										var_dump(count($profilesToRegister));
+										//var_dump(count($profilesToRegister));
 										$profilesToRegister = array();										
 									} else {
 										if ($add_with_consent == 1) {
@@ -138,11 +160,16 @@ class Sincro
 					} else {
 						//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 					}					
-					var_dump(count($profilesToRegister));
+					//var_dump(count($profilesToRegister));
 				}
 			} else {
 				Logs::register(json_encode($leagues));
 			}
+            return [
+                'leagues'   =>$leaguesNumber,
+                'teams'     =>$teamsNumber,
+                'players'   =>$playersNumber
+            ];
 		} catch (\Throwable $th) {
 			Logs::register(json_encode($th->getMessage()));
 		}
@@ -151,7 +178,7 @@ class Sincro
     public function llki_sync_by_id()
 	{
 		try {			
-			//League Lab vars
+			//League Lab vars           
 			$league_lab_api_key = get_option('league_lab_api_key');
 			$site = get_option('league_lab_site');
 			$activeLeagues = get_option('ll_active_leagues');
@@ -161,6 +188,10 @@ class Sincro
 			$klaviyo_api_key = get_option('klaviyo_api_key');
 			$klaviyo_list_id = get_option('klaviyo_list_id');
 			$add_with_consent = get_option('klaviyo_add_with_consent');
+
+            $leaguesNumber=count($activeLeagues);
+            $teamsNumber=0;
+            $playersNumber=0;
 
 			$profilesToRegister = array();
 
@@ -174,7 +205,11 @@ class Sincro
 
 				foreach ($teamsByLeague->teams as $keyt => $team) {
 
+                    $teamsNumber=$teamsNumber+1;
+
 					foreach ($team->players as $keyp => $player) {
+
+                        $playersNumber=$playersNumber+1;
 
 						$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
 
@@ -213,7 +248,7 @@ class Sincro
 							} else {
 								//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 							}
-							var_dump(count($profilesToRegister));
+							//var_dump(count($profilesToRegister));
 							$profilesToRegister = array();
 						} else {
 							if ($add_with_consent == 1) {
@@ -245,8 +280,13 @@ class Sincro
 				} else {
 					//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 				}
-				var_dump(count($profilesToRegister));
+				//var_dump(count($profilesToRegister));
 			}
+            return [
+                'leagues'   =>$leaguesNumber,
+                'teams'     =>$teamsNumber,
+                'players'   =>$playersNumber
+            ];
 		} catch (\Throwable $th) {
 			Logs::register(json_encode($th->getMessage()));
 		}

@@ -17,7 +17,7 @@ class Settings
 	{
 		add_action('admin_menu', array($this, 'add_configuration_menus'));
 		add_action('admin_init', array($this, 'register_settings'));
-		add_action('init', array($this, 'llki_SincroByLeagueId'));
+		add_action('init', array($this, 'llki_sync'));
 	}
 
 	// Add configuration menus
@@ -58,6 +58,7 @@ class Settings
 			<h1 class="nav-tab-wrapper">
 				<a href="?page=league-lab-klaviyo" class="nav-tab <?php echo (empty($_GET['tab']) || $_GET['tab'] === 'league-lab') ? 'nav-tab-active' : ''; ?>">League Lab Configuration</a>
 				<a href="?page=league-lab-klaviyo&tab=klaviyo" class="nav-tab <?php echo (isset($_GET['tab']) && $_GET['tab'] === 'klaviyo') ? 'nav-tab-active' : ''; ?>">Klaviyo Configuration</a>
+				<a href="?page=league-lab-klaviyo&tab=sincro" class="nav-tab <?php echo (isset($_GET['tab']) && $_GET['tab'] === 'sincro') ? 'nav-tab-active' : ''; ?>">Sync</a>
 			</h1>
 
 			<?php
@@ -65,6 +66,8 @@ class Settings
 				$this->display_league_lab_configuration();
 			} else if ($_GET['tab'] === 'klaviyo') {
 				$this->display_klaviyo_configuration();
+			} else if ($_GET['tab'] === 'sincro') {
+				$this->display_sync();
 			}
 			?>
 		</div>
@@ -106,6 +109,23 @@ class Settings
 			</form>
 		</div>
 <?php
+	}
+
+	// Display the Klaviyo configuration page content
+	public function display_sync()
+	{
+		?>
+			<div class="wrap">
+				<h1>Synchronization</h1>
+				<div id="sync-progress"></div>
+				<div id="spinner" style="display: none;">
+					<img id="sync-spinner" class="spinnerr" src="https://i.gifer.com/ZZ5H.gif" alt="Loading..."  />
+				</div>
+				<button id="manual-sync-button" class="button cbutton" onclick="syncro()">
+					Manual Sync
+				</button>
+			</div>
+		<?php
 	}
 
 	// Register settings for League Lab and Klaviyo
@@ -332,10 +352,21 @@ class Settings
 		echo '<input type="checkbox" id="klaviyo_add_with_consent" name="klaviyo_add_with_consent" value="1" ' . checked($add_with_consent, 1, false) . ' />';
 	}
 
+	public function llki_sync() {
+
+		$active_leagues_type = get_option('active_leagues_type');
+        if($active_leagues_type==='2'){
+            $this->llki_SincroByLeagueName();
+        }else{
+            $this->llki_SincroByLeagueId();
+        }
+        
+    }
+
 	public function llki_SincroByLeagueName()
 	{
 		try {
-			//League Lab vars
+			//League Lab vars			
 			$league_lab_api_key = get_option('league_lab_api_key');
 			$site = get_option('league_lab_site');
 			$active_leagues = get_option('league_lab_active_leagues');
@@ -365,10 +396,10 @@ class Settings
 
 							$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $league->id);
 
-							foreach ($teamsByLeague->teams as $keyt => $team) {
+							foreach ($teamsByLeague->teams as $keyt => $team) {								
 
 								foreach ($team->players as $keyp => $player) {
-
+									
 									$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
 
 									if (count($profile->data) == 0) {
@@ -406,7 +437,7 @@ class Settings
 										} else {
 											//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 										}
-										var_dump(count($profilesToRegister));
+										var_dump(count($profilesToRegister).'<br>');
 										$profilesToRegister = array();
 									} else {
 										if ($add_with_consent == 1) {
@@ -440,7 +471,7 @@ class Settings
 					} else {
 						//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 					}
-					var_dump(count($profilesToRegister));
+					var_dump(count($profilesToRegister).'<br>');
 				}
 			} else {
 				Logs::register(json_encode($leagues));
@@ -453,7 +484,7 @@ class Settings
 	public function llki_SincroByLeagueId()
 	{
 		try {
-			return;
+			return;		
 			//League Lab vars
 			$league_lab_api_key = get_option('league_lab_api_key');
 			$site = get_option('league_lab_site');
@@ -468,7 +499,7 @@ class Settings
 			$profilesToRegister = array();
 
 			$profilesNumber = $add_with_consent == 1 ? 100 : 1000;
-
+			$sum=0;
 			foreach ($activeLeagues as $key => $active) {
 
 				$league = Helper::get_LeagueLabLeaguesById($site, $league_lab_api_key, $active)->leagues[0];
@@ -477,6 +508,8 @@ class Settings
 
 				foreach ($teamsByLeague->teams as $keyt => $team) {
 
+					var_dump(count($team->players).'<br>');
+					$sum=$sum+count($team->players);
 					foreach ($team->players as $keyp => $player) {
 
 						$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
@@ -539,8 +572,7 @@ class Settings
 						}
 					}
 				}
-			}
-
+			}			
 			if (count($profilesToRegister) > 0 && count($profilesToRegister) < $profilesNumber) {
 
 				if ($add_with_consent == 1) {
