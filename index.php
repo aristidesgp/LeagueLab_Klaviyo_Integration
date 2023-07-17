@@ -6,7 +6,7 @@
 
 Plugin Name:  League Lab Klaviyo Integration
 Plugin URI:   https://thomasgbennett.com/
-Description:  Groups all the tracking numbers from shipEasy and adds them in the Woocommerce shipping notification mail
+Description:  Tool to synchronize registered players by leagues from League Lab to Klaviyo
 Version:      1.0.0
 Author:       Bennet Group (Aristides Gutierrez)
 Author URI:   https://thomasgbennett.com/

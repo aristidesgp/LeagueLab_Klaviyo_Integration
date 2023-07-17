@@ -366,6 +366,7 @@ class Settings
 	public function llki_SincroByLeagueName()
 	{
 		try {
+			return;
 			//League Lab vars			
 			$league_lab_api_key = get_option('league_lab_api_key');
 			$site = get_option('league_lab_site');
