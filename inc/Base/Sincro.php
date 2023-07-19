@@ -90,6 +90,7 @@ class Sincro
                                     $playersNumber=$playersNumber+1;
 
 									$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
+									$profileId = 0;
 
 									if (count($profile->data) == 0) {
 										//add new
@@ -101,9 +102,11 @@ class Sincro
 											'league_name'	=>	$league->name,
 											'team_name'		=>	$team->team_name,
 											'is_captain'	=>	$player->captain,
-											//'team_status'	=>	'Active'
+											'team_status'	=>	''
 										];
-										//$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);							
+										$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
+										$profileId = $newP['response']['data']['id'];
+
 									} else {
 										//update
 										$arguments = [
@@ -114,38 +117,42 @@ class Sincro
 											'league_name'	=>	$league->name,
 											'team_name'		=>	$team->team_name,
 											'is_captain'	=>	$player->captain,
-											//'team_status'	=>	'Active',
+											'team_status'	=>	'',
 											'profile_id'	=>	$profile->data[0]->id
 										];
-										//$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
+										$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
+										$profileId = $profile->data[0]->id;
+
 									}
 									
 									if (count($profilesToRegister) == $profilesNumber) {
 										if ($add_with_consent == 1) {
-											//$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+											$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 										} else {
-											//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+											$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 										}										
 										//var_dump(count($profilesToRegister));
 										$profilesToRegister = array();										
 									} else {
-										if ($add_with_consent == 1) {
-											$prof = array(
-												'channels' => array(
-													'email' => array('MARKETING'),
-													'sms' => array('MARKETING')
-												),
-												'email' => $arguments['email'],
-												'phone_number' => $arguments['phone'],
-												'profile_id' => $profile->data[0]->id
-											);
-										} else {
-											$prof = array(
-												'type' => 'profile',
-												'id' => $profile->data[0]->id
-											);
+										if (!is_null($profileId)) {
+											if ($add_with_consent == 1) {												
+												$prof = array(
+													'channels' => array(
+														'email' => array('MARKETING'),
+														'sms' => array('MARKETING')
+													),
+													'email' => $arguments['email'],
+													'phone_number' => $arguments['phone'],
+													'profile_id' => $profileId
+												);												
+											} else {												
+												$prof = array(
+													'type' => 'profile',
+													'id' => $profileId
+												);												
+											}
+											$profilesToRegister[] = $prof;
 										}
-										$profilesToRegister[] = $prof;
 									}
 								}
 							}
@@ -156,9 +163,9 @@ class Sincro
 				if(count($profilesToRegister)>0 && count($profilesToRegister) < $profilesNumber){
 
 					if ($add_with_consent == 1) {
-						//$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+						$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 					} else {
-						//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+						$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 					}					
 					//var_dump(count($profilesToRegister));
 				}
@@ -198,7 +205,7 @@ class Sincro
 			$profilesNumber = $add_with_consent == 1 ? 100 : 1000;
 
 			foreach ($activeLeagues as $key => $active) {
-
+				Logs::register($active);
 				$league = Helper::get_LeagueLabLeaguesById($site, $league_lab_api_key, $active)->leagues[0];
 
 				$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $active);
@@ -212,6 +219,7 @@ class Sincro
                         $playersNumber=$playersNumber+1;
 
 						$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
+						$profileId=0;
 
 						if (count($profile->data) == 0) {
 							//add new
@@ -223,9 +231,12 @@ class Sincro
 								'league_name'	=>	$league->name,
 								'team_name'		=>	$team->team_name,
 								'is_captain'	=>	$player->captain,
-								//'team_status'	=>	'Active'
+								'team_status'	=>	''
 							];
-							//$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);							
+							
+							$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
+							$profileId = $newP['response']['data']['id'];							
+
 						} else {
 							//update
 							$arguments = [
@@ -236,38 +247,42 @@ class Sincro
 								'league_name'	=>	$league->name,
 								'team_name'		=>	$team->team_name,
 								'is_captain'	=>	$player->captain,
-								//'team_status'	=>	'Active',
+								'team_status'	=>	'',
 								'profile_id'	=>	$profile->data[0]->id
 							];
-							//$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
+							$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
+							$profileId =$profile->data[0]->id;
+
 						}
 
 						if (count($profilesToRegister) == $profilesNumber) {
 							if ($add_with_consent == 1) {
-								//$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+								$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 							} else {
-								//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+								$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 							}
 							//var_dump(count($profilesToRegister));
 							$profilesToRegister = array();
 						} else {
-							if ($add_with_consent == 1) {
-								$prof = array(
-									'channels' => array(
-										'email' => array('MARKETING'),
-										'sms' => array('MARKETING')
-									),
-									'email' => $arguments['email'],
-									'phone_number' => $arguments['phone'],
-									'profile_id' => $profile->data[0]->id
-								);
-							} else {
-								$prof = array(
-									'type' => 'profile',
-									'id' => $profile->data[0]->id
-								);
+							if (!is_null($profileId)) {
+								if ($add_with_consent == 1) {								
+									$prof = array(
+										'channels' => array(
+											'email' => array('MARKETING'),
+											'sms' => array('MARKETING')
+										),
+										'email' => $arguments['email'],
+										'phone_number' => $arguments['phone'],
+										'profile_id' => $profileId
+									);								
+								} else {								
+									$prof = array(
+										'type' => 'profile',
+										'id' => $profileId
+									);															
+								}
+								$profilesToRegister[] = $prof;
 							}
-							$profilesToRegister[] = $prof;
 						}
 					}
 				}
@@ -276,9 +291,10 @@ class Sincro
 			if (count($profilesToRegister) > 0 && count($profilesToRegister) < $profilesNumber) {
 
 				if ($add_with_consent == 1) {
-					//$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+					$subL=Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 				} else {
-					//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+					$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
+
 				}
 				//var_dump(count($profilesToRegister));
 			}

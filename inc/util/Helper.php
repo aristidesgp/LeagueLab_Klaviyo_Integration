@@ -2,6 +2,8 @@
 
 namespace LLKI\Inc\Util;
 
+use LLKI\Inc\Base\Logs;
+
 final class Helper
 {
 
@@ -133,13 +135,13 @@ final class Helper
 			'content-type' => 'application/json',
 			'revision' => '2023-06-15'
 		);
-
+		
 		$data = array(
 			'data' => array(
 				'type' => 'profile',
 				'attributes' => array(
 					'email' => $arguments['email'],
-					'phone_number' => '+1' . $arguments['phone'],
+					'phone_number' => '+1'. $arguments['phone'],
 					'first_name' => $arguments['first_name'],
 					'last_name' => $arguments['last_name'],
 					'properties' => array(
@@ -156,11 +158,15 @@ final class Helper
 			'headers' => $headers,
 			'body' => wp_json_encode($data)
 		);
-
+		
 		$response = wp_remote_post($api_url, $args);
 		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 201) {
-			return ['code' => 201, 'message' => 'Profile succefull registered in Klaviyo.'];
+			$body = wp_remote_retrieve_body($response);
+			$data = json_decode($body, true);
+			return ['code' => 201, 'message' => 'Profile succefull registered in Klaviyo.', 'response'=> $data];
 		} else {
+			Logs::register($arguments['email']);
+			Logs::register(json_encode($response));
 			$error_message = is_wp_error($response) ? $response->get_error_message() : 'Klaviyo Error.';
 			return ['code' => 500, 'message' => 'Error registering profile in Klaviyo: ' . $error_message];
 		}
@@ -260,6 +266,7 @@ final class Helper
 			'content-type' => 'application/json',
 			'revision' => '2023-06-15'
 		);
+		Logs::register(json_encode($profiles));
 
 		$data = array(
 			'data' => $profiles			
@@ -273,10 +280,13 @@ final class Helper
 		$response = wp_remote_post($api_url, $args);
 
 		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 204) {
+			Logs::register('Profiles added successfully in Klaviyo list.');
 			return 'Profiles added successfully in Klaviyo list.';
 		} else {
 			// Error: Failed to register profiles in Klaviyo list
+			Logs::register(json_encode($response));
 			$error_message = is_wp_error($response) ? $response->get_error_message() : 'Error in the request to Klaviyo.';
+			Logs::register('Error adding profiles in Klaviyo list: ' . $error_message);
 			return 'Error adding profiles in Klaviyo list: ' . $error_message;
 		}
 	}
