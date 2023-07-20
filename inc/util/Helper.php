@@ -167,8 +167,9 @@ final class Helper
 		} else {
 			Logs::register($arguments['email']);
 			Logs::register(json_encode($response));
-			$error_message = is_wp_error($response) ? $response->get_error_message() : 'Klaviyo Error.';
-			return ['code' => 500, 'message' => 'Error registering profile in Klaviyo: ' . $error_message];
+			$body = wp_remote_retrieve_body($response);
+			$data = json_decode($body, true);			
+			return ['code' => 500, 'message' => 'Error registering profile in Klaviyo: ' . $data['errors']];
 		}
 	}
 
