@@ -311,6 +311,10 @@ class Settings
 
 		foreach ($leagues->leagues as $league) {
 			$leagueId = $league->id;
+			$leagueStatus='';
+			foreach ($league->divisions as $key => $division) {
+				$leagueStatus.=' /<strong> DIVISION:</strong> '.$division->name.' <strong>TEAM STATUS:</strong>'.$division->team_status;				
+			}
 			$leagueName = $league->name;
 
 			echo '<label>';
@@ -318,7 +322,7 @@ class Settings
 			if (is_array($activeLeagues) && in_array($leagueId, $activeLeagues)) {
 				echo ' checked';
 			}
-			echo '> ' . esc_html($leagueName) . ' => ' . esc_html($leagueId);
+			echo '> ' . esc_html($leagueName) . ' => ' . esc_html($leagueId). ' => ' . $leagueStatus;
 			echo '</label><br>';		
 
 						

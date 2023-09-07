@@ -28,6 +28,7 @@ function syncro() {
                 action: 'manual_sync' 
             },
             success: function(response) {
+                console.log(response);
 				var data = JSON.parse(response);				
                 if (data.success) {                    
 					resolve(data.data);

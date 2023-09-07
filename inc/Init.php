@@ -22,8 +22,7 @@ final class Init{
             if(method_exists( $service , 'register')){
                 $service->register();
             }
-        }
-
+        }        
     }
 
     private static function instantiate($class){

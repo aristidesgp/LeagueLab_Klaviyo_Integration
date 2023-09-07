@@ -165,8 +165,8 @@ final class Helper
 			$data = json_decode($body, true);
 			return ['code' => 201, 'message' => 'Profile succefull registered in Klaviyo.', 'response'=> $data];
 		} else {
-			Logs::register($arguments['email']);
-			Logs::register(json_encode($response));
+			//Logs::register($arguments['email']);
+			//Logs::register(json_encode($response));
 			$body = wp_remote_retrieve_body($response);
 			$data = json_decode($body, true);			
 			return ['code' => 500, 'message' => 'Error registering profile in Klaviyo: ' . $data['errors']];
@@ -267,7 +267,7 @@ final class Helper
 			'content-type' => 'application/json',
 			'revision' => '2023-06-15'
 		);
-		Logs::register(json_encode($profiles));
+		
 
 		$data = array(
 			'data' => $profiles			
@@ -281,13 +281,13 @@ final class Helper
 		$response = wp_remote_post($api_url, $args);
 
 		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 204) {
-			Logs::register('Profiles added successfully in Klaviyo list.');
+			//Logs::register('Profiles added successfully in Klaviyo list.');
 			return 'Profiles added successfully in Klaviyo list.';
 		} else {
 			// Error: Failed to register profiles in Klaviyo list
-			Logs::register(json_encode($response));
+			//Logs::register(json_encode($response));
 			$error_message = is_wp_error($response) ? $response->get_error_message() : 'Error in the request to Klaviyo.';
-			Logs::register('Error adding profiles in Klaviyo list: ' . $error_message);
+			//Logs::register('Error adding profiles in Klaviyo list: ' . $error_message);
 			return 'Error adding profiles in Klaviyo list: ' . $error_message;
 		}
 	}

@@ -30,7 +30,9 @@ define('LLKI_THEME_DOMAIN', get_site_url());
 
 
 //include the helpers
-include 'inc/util/helper.php';
+include 'inc/util/Helper.php';
+include 'inc/Base/Logs.php';
+include 'inc/Base/Sincro.php';
 
 if (class_exists('LLKI\\Inc\\Init')) {
     register_activation_hook(__FILE__, array('LLKI\\Inc\\Base\\Activate', 'activate'));

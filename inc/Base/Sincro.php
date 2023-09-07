@@ -158,7 +158,7 @@ class Sincro
 				'players'   => $playersNumber
 			];
 		} catch (\Throwable $th) {
-			Logs::register(json_encode($th->getMessage()));
+			//Logs::register(json_encode($th->getMessage()));
 		}
 	}
 
@@ -181,7 +181,7 @@ class Sincro
 			$playersNumber = 0;
 
 			foreach ($activeLeagues as $key => $active) {
-				Logs::register($active);
+				//Logs::register($active);
 				$league = Helper::get_LeagueLabLeaguesById($site, $league_lab_api_key, $active)->leagues[0];
 
 				$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $active);
@@ -258,7 +258,7 @@ class Sincro
 				'players'   => $playersNumber
 			];
 		} catch (\Throwable $th) {
-			Logs::register(json_encode($th->getMessage()));
+			//Logs::register(json_encode($th->getMessage()));
 		}
 	}
 }

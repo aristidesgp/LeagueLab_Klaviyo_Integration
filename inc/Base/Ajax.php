@@ -22,10 +22,15 @@ class Ajax
     }
 
     public function manual_sync_handler() {
-        $sync=new Sincro();
-        $data=$sync->llki_run_daily_sync();
-        echo json_encode(array('success' => true,'data' => $data));
-        wp_die();
+        try {            
+            $sync=new Sincro();
+            $data=$sync->llki_run_daily_sync();
+            echo json_encode(array('success' => true,'data' => $data));
+            wp_die();
+        } catch (\Throwable $th) {
+            //Logs::register($th->getMessage());
+        }
+        
     }
     
 }
