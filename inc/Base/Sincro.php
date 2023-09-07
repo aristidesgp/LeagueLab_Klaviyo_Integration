@@ -108,14 +108,19 @@ class Sincro
 										$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
 										$profileId = $newP['response']['data']['id'];
 									} else {
+										$latribute='League Name';
+										$tatribute='Team Name';
+										$actual_leagues=isset($profile->data[0]->attributes->properties->$latribute)?$profile->data[0]->attributes->properties->$latribute.' | ':'';
+										$actual_teams=isset($profile->data[0]->attributes->properties->$tatribute)?$profile->data[0]->attributes->properties->$tatribute.' | ':'';
+										
 										//update
 										$arguments = [
 											'email'			=>	$player->email,
 											'phone'			=>	$player->phone,
 											'first_name'	=>	$player->first_name,
 											'last_name'		=>	$player->last_name,
-											'league_name'	=>	$league->name,
-											'team_name'		=>	$team->team_name,
+											'league_name'	=>	$actual_leagues.$league->name,
+											'team_name'		=>	$actual_teams.$team->team_name,
 											'is_captain'	=>	$player->captain,
 											'team_status'	=>	'',
 											'profile_id'	=>	$profile->data[0]->id
@@ -213,14 +218,19 @@ class Sincro
 							$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
 							$profileId = $newP['response']['data']['id'];
 						} else {
+							$latribute='League Name';
+							$tatribute='Team Name';
+							$actual_leagues=isset($profile->data[0]->attributes->properties->$latribute)?$profile->data[0]->attributes->properties->$latribute.' | ':'';
+							$actual_teams=isset($profile->data[0]->attributes->properties->$tatribute)?$profile->data[0]->attributes->properties->$tatribute.' | ':'';
+							
 							//update
 							$arguments = [
 								'email'			=>	$player->email,
 								'phone'			=>	$player->phone,
 								'first_name'	=>	$player->first_name,
 								'last_name'		=>	$player->last_name,
-								'league_name'	=>	$league->name,
-								'team_name'		=>	$team->team_name,
+								'league_name'	=>	$actual_leagues.$league->name,
+								'team_name'		=>	$actual_teams.$team->team_name,
 								'is_captain'	=>	$player->captain,
 								'team_status'	=>	'',
 								'profile_id'	=>	$profile->data[0]->id
