@@ -102,7 +102,7 @@ class Sincro
 											'league_name'	=>	$league->name,
 											'team_name'		=>	$team->team_name,
 											'is_captain'	=>	$player->captain,
-											'team_status'	=>	''
+											'team_status'	=>	$player->player_status
 										];
 
 										$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -140,6 +140,7 @@ class Sincro
 											'league_name'	=>	$current_lattribute,
 											'team_name'		=>	$current_tattribute,
 											'is_captain'	=>	$player->captain,
+											'player_status'	=>	$player->player_status,
 											'team_status'	=>	'',
 											'profile_id'	=>	$profile->data[0]->id
 										];
@@ -230,7 +231,7 @@ class Sincro
 								'league_name'	=>	$league->name,
 								'team_name'		=>	$team->team_name,
 								'is_captain'	=>	$player->captain,
-								'team_status'	=>	''
+								'team_status'	=>	$player->player_status
 							];
 
 							$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -267,7 +268,7 @@ class Sincro
 								'league_name'	=>	$current_lattribute,
 								'team_name'		=>	$current_tattribute,
 								'is_captain'	=>	$player->captain,
-								'team_status'	=>	'',
+								'team_status'	=>	$player->player_status,
 								'profile_id'	=>	$profile->data[0]->id
 							];
 							$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);

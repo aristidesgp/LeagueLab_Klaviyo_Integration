@@ -72,7 +72,7 @@ final class Helper
 		$curl = curl_init();
 
 		curl_setopt_array($curl, [
-			CURLOPT_URL => "https://api.leaguelab.com/v1/sites/" . $site . "/leagues/" . $league . "/teams",
+			CURLOPT_URL => "https://api.leaguelab.com/v1/sites/" . $site . "/leagues/" . $league . "/teams/show-all/",
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_ENCODING => "",
 			CURLOPT_MAXREDIRS => 10,
@@ -148,6 +148,7 @@ final class Helper
 						'League Name' => $arguments['league_name'],
 						'Team Name' => $arguments['team_name'],
 						'Captain' => $arguments['is_captain'],
+						'Player Status' => $arguments['player_status'],
 						'Team Status' => $arguments['team_status']
 					)
 				)
@@ -196,6 +197,7 @@ final class Helper
 						'League Name' => $arguments['league_name'],
 						'Team Name' => $arguments['team_name'],
 						'Captain' => $arguments['is_captain'],
+						'Player Status' => $arguments['player_status'],
 						'Team Status' => $arguments['team_status']
 					)
 				)
