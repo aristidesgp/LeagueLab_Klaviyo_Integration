@@ -99,10 +99,11 @@ class Sincro
 											'phone'			=>	$player->phone,
 											'first_name'	=>	$player->first_name,
 											'last_name'		=>	$player->last_name,
-											'league_name'	=>	$league->name,
-											'team_name'		=>	$team->team_name,
+											'league_name'	=>	[$league->name],
+											'team_name'		=>	[$team->team_name],
 											'is_captain'	=>	$player->captain,
-											'team_status'	=>	$player->player_status
+											'team_status'	=>	$player->player_status,
+											'player_status'	=>	'' //$player->player_status,
 										];
 
 										$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -110,25 +111,37 @@ class Sincro
 									} else {
 										$latribute = 'League Name';
 										$tatribute = 'Team Name';
+										$profileLeagues = isset($profile->data[0]->attributes->properties->$latribute) ? $profile->data[0]->attributes->properties->$latribute : [];
+										$profileTeams = isset($profile->data[0]->attributes->properties->$tatribute) ? $profile->data[0]->attributes->properties->$tatribute : [];
 
-										$current_tattribute = isset($profile->data[0]->attributes->properties->$tatribute) ? $profile->data[0]->attributes->properties->$tatribute : '';
-
-										if (strpos($current_tattribute, $team->team_name) !== false) {
-											$current_tattribute = str_replace($team->team_name . ' | ', '', $current_tattribute);
-											$current_tattribute = str_replace($team->team_name, '', $current_tattribute);
+										$isLeague = false;
+										if (is_array($profileLeagues)) {
+											foreach ($profileLeagues as $key => $pleague) {
+												if ($pleague == $league->name) {
+													$isLeague = true;
+													break;
+												}
+											}
+											if (!$isLeague)
+												$profileLeagues[] = $league->name;
+										} else {
+											$profileLeagues = [$league->name];
 										}
 
-										$current_tattribute = $current_tattribute == '' ? $team->team_name : $current_tattribute . ' | ' . $team->team_name;
-
-
-										$current_lattribute = isset($profile->data[0]->attributes->properties->$latribute) ? $profile->data[0]->attributes->properties->$latribute : '';
-
-										if (strpos($current_lattribute, $league->name) !== false) {
-											$current_lattribute = str_replace($league->name . ' | ', '', $current_lattribute);
-											$current_lattribute = str_replace($league->name, '', $current_lattribute);
+										$isTeam = false;
+										if (is_array($profileTeams)) {
+											foreach ($profileTeams as $key => $pTeam) {
+												if ($pTeam == $team->team_name) {
+													$isTeam = true;
+													break;
+												}
+											}
+											if (!$isTeam)
+												$profileTeams[] = $team->team_name;
+										} else {
+											$profileTeams = [$team->team_name];
 										}
 
-										$current_tattribute = $current_lattribute == '' ? $league->name : $current_lattribute . ' | ' . $league->name;
 
 
 										//update
@@ -137,10 +150,10 @@ class Sincro
 											'phone'			=>	$player->phone,
 											'first_name'	=>	$player->first_name,
 											'last_name'		=>	$player->last_name,
-											'league_name'	=>	$current_lattribute,
-											'team_name'		=>	$current_tattribute,
+											'league_name'	=>	$profileLeagues,
+											'team_name'		=>	$profileTeams,
 											'is_captain'	=>	$player->captain,
-											'player_status'	=>	$player->player_status,
+											'player_status'	=>	'', //$player->player_status,
 											'team_status'	=>	'',
 											'profile_id'	=>	$profile->data[0]->id
 										];
@@ -228,10 +241,11 @@ class Sincro
 								'phone'			=>	$player->phone,
 								'first_name'	=>	$player->first_name,
 								'last_name'		=>	$player->last_name,
-								'league_name'	=>	$league->name,
-								'team_name'		=>	$team->team_name,
+								'league_name'	=>	[$league->name],
+								'team_name'		=>	[$team->team_name],
 								'is_captain'	=>	$player->captain,
-								'team_status'	=>	$player->player_status
+								'team_status'	=>	$player->player_status,
+								'player_status'	=>	'' //$player->player_status,
 							];
 
 							$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -239,24 +253,37 @@ class Sincro
 						} else {
 							$latribute = 'League Name';
 							$tatribute = 'Team Name';
-							$current_tattribute = isset($profile->data[0]->attributes->properties->$tatribute) ? $profile->data[0]->attributes->properties->$tatribute : '';
+							$profileLeagues = isset($profile->data[0]->attributes->properties->$latribute) ? $profile->data[0]->attributes->properties->$latribute : [];
+							$profileTeams = isset($profile->data[0]->attributes->properties->$tatribute) ? $profile->data[0]->attributes->properties->$tatribute : [];
 
-							if (strpos($current_tattribute, $team->team_name) !== false) {
-								$current_tattribute = str_replace($team->team_name . ' | ', '', $current_tattribute);
-								$current_tattribute = str_replace($team->team_name, '', $current_tattribute);
+							$isLeague = false;
+							if (is_array($profileLeagues)) {
+								foreach ($profileLeagues as $key => $pleague) {
+									if ($pleague == $league->name) {
+										$isLeague = true;
+										break;
+									}
+								}
+								if (!$isLeague)
+									$profileLeagues[] = $league->name;
+							} else {
+								$profileLeagues = [$league->name];
 							}
 
-							$current_tattribute = $current_tattribute == '' ? $team->team_name : $current_tattribute . ' | ' . $team->team_name;
-
-
-							$current_lattribute = isset($profile->data[0]->attributes->properties->$latribute) ? $profile->data[0]->attributes->properties->$latribute : '';
-
-							if (strpos($current_lattribute, $league->name) !== false) {
-								$current_lattribute = str_replace($league->name . ' | ', '', $current_lattribute);
-								$current_lattribute = str_replace($league->name, '', $current_lattribute);
+							$isTeam = false;
+							if (is_array($profileTeams)) {
+								foreach ($profileTeams as $key => $pTeam) {
+									if ($pTeam == $team->team_name) {
+										$isTeam = true;
+										break;
+									}
+								}
+								if (!$isTeam)
+									$profileTeams[] = $team->team_name;
+							} else {
+								$profileTeams = [$team->team_name];
 							}
 
-							$current_tattribute = $current_lattribute == '' ? $league->name : $current_lattribute . ' | ' . $league->name;
 
 
 							//update
@@ -265,10 +292,11 @@ class Sincro
 								'phone'			=>	$player->phone,
 								'first_name'	=>	$player->first_name,
 								'last_name'		=>	$player->last_name,
-								'league_name'	=>	$current_lattribute,
-								'team_name'		=>	$current_tattribute,
+								'league_name'	=>	$profileLeagues,
+								'team_name'		=>	$profileTeams,
 								'is_captain'	=>	$player->captain,
-								'team_status'	=>	$player->player_status,
+								'player_status'	=>	'', //$player->player_status,
+								'team_status'	=>	'',
 								'profile_id'	=>	$profile->data[0]->id
 							];
 							$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
