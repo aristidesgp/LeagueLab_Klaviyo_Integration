@@ -102,8 +102,8 @@ class Sincro
 											'league_name'	=>	[$league->name],
 											'team_name'		=>	[$team->team_name],
 											'is_captain'	=>	$player->captain,
-											'team_status'	=>	$player->player_status,
-											'player_status'	=>	'' //$player->player_status,
+											'team_status'	=>	[$team->registration_status],
+											'player_status'	=>	[$player->player_status],
 										];
 
 										$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -111,8 +111,13 @@ class Sincro
 									} else {
 										$latribute = 'League Name';
 										$tatribute = 'Team Name';
+										$pstatus = 'Player Status';
+										$tstatus = 'Team Status';
 										$profileLeagues = isset($profile->data[0]->attributes->properties->$latribute) ? $profile->data[0]->attributes->properties->$latribute : [];
 										$profileTeams = isset($profile->data[0]->attributes->properties->$tatribute) ? $profile->data[0]->attributes->properties->$tatribute : [];
+
+										$profilePstatus = isset($profile->data[0]->attributes->properties->$pstatus) ? $profile->data[0]->attributes->properties->$pstatus : [];
+										$profileTstatus = isset($profile->data[0]->attributes->properties->$tstatus) ? $profile->data[0]->attributes->properties->$tstatus : [];
 
 										$isLeague = false;
 										if (is_array($profileLeagues)) {
@@ -142,19 +147,52 @@ class Sincro
 											$profileTeams = [$team->team_name];
 										}
 
+										$isPlayerStatus = false;
+										if (is_array($profilePstatus)) {
+											foreach ($profilePstatus as $key => $pTeam) {
+												if ($pTeam == $player->player_status) {
+													$isPlayerStatus = true;
+													break;
+												}
+											}
+											if (!$isPlayerStatus)
+												$profilePstatus[] = $player->player_status;
+										} else {
+											$profilePstatus = [$player->player_status];
+										}
+
+										$isTeamStatus = false;
+										if (is_array($profileTstatus)) {
+											foreach ($profileTstatus as $key => $pTeam) {
+												if ($pTeam == $team->registration_status) {
+													$isTeamStatus = true;
+													break;
+												}
+											}
+											if (!$isTeamStatus)
+												$profileTstatus[] = $team->registration_status;
+										} else {
+											$profileTstatus = [$team->registration_status];
+										}
+
+										$phoneNumber = $player->phone;
+										if ($phoneNumber == null)
+											$phoneNumber = $profile->data[0]->attributes->phone_number;
+										else
+											$phoneNumber = '+1' . $phoneNumber;
 
 
 										//update
 										$arguments = [
 											'email'			=>	$player->email,
-											'phone'			=>	$player->phone,
+											'phone'			=>	$phoneNumber,
 											'first_name'	=>	$player->first_name,
 											'last_name'		=>	$player->last_name,
 											'league_name'	=>	$profileLeagues,
 											'team_name'		=>	$profileTeams,
 											'is_captain'	=>	$player->captain,
-											'player_status'	=>	'', //$player->player_status,
-											'team_status'	=>	'',
+											'player_status'	=>	$profilePstatus,
+											'team_status'	=>	$profileTstatus,
 											'profile_id'	=>	$profile->data[0]->id
 										];
 										$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
@@ -244,8 +282,8 @@ class Sincro
 								'league_name'	=>	[$league->name],
 								'team_name'		=>	[$team->team_name],
 								'is_captain'	=>	$player->captain,
-								'team_status'	=>	$player->player_status,
-								'player_status'	=>	'' //$player->player_status,
+								'team_status'	=>	[$player->registration_status],
+								'player_status'	=>	[$player->player_status],
 							];
 
 							$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -253,8 +291,13 @@ class Sincro
 						} else {
 							$latribute = 'League Name';
 							$tatribute = 'Team Name';
+							$pstatus = 'Player Status';
+							$tstatus = 'Team Status';
 							$profileLeagues = isset($profile->data[0]->attributes->properties->$latribute) ? $profile->data[0]->attributes->properties->$latribute : [];
 							$profileTeams = isset($profile->data[0]->attributes->properties->$tatribute) ? $profile->data[0]->attributes->properties->$tatribute : [];
+
+							$profilePstatus = isset($profile->data[0]->attributes->properties->$pstatus) ? $profile->data[0]->attributes->properties->$pstatus : [];
+							$profileTstatus = isset($profile->data[0]->attributes->properties->$tstatus) ? $profile->data[0]->attributes->properties->$tstatus : [];
 
 							$isLeague = false;
 							if (is_array($profileLeagues)) {
@@ -284,19 +327,52 @@ class Sincro
 								$profileTeams = [$team->team_name];
 							}
 
+							$isPlayerStatus = false;
+							if (is_array($profilePstatus)) {
+								foreach ($profilePstatus as $key => $pTeam) {
+									if ($pTeam == $player->player_status) {
+										$isPlayerStatus = true;
+										break;
+									}
+								}
+								if (!$isPlayerStatus)
+									$profilePstatus[] = $player->player_status;
+							} else {
+								$profilePstatus = [$player->player_status];
+							}
+
+							$isTeamStatus = false;
+							if (is_array($profileTstatus)) {
+								foreach ($profileTstatus as $key => $pTeam) {
+									if ($pTeam == $team->registration_status) {
+										$isTeamStatus = true;
+										break;
+									}
+								}
+								if (!$isTeamStatus)
+									$profileTstatus[] = $team->registration_status;
+							} else {
+								$profileTstatus = [$team->registration_status];
+							}
+
+							$phoneNumber = $player->phone;
+							if ($phoneNumber == null)
+								$phoneNumber = $profile->data[0]->attributes->phone_number;
+							else
+								$phoneNumber = '+1' . $phoneNumber;
 
 
 							//update
 							$arguments = [
 								'email'			=>	$player->email,
-								'phone'			=>	$player->phone,
+								'phone'			=>	$phoneNumber,
 								'first_name'	=>	$player->first_name,
 								'last_name'		=>	$player->last_name,
 								'league_name'	=>	$profileLeagues,
 								'team_name'		=>	$profileTeams,
 								'is_captain'	=>	$player->captain,
-								'player_status'	=>	'', //$player->player_status,
-								'team_status'	=>	'',
+								'player_status'	=>	$profilePstatus,
+								'team_status'	=>	$profileTstatus,
 								'profile_id'	=>	$profile->data[0]->id
 							];
 							$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
