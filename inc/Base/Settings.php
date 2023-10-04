@@ -156,6 +156,16 @@ class Settings
 		);
 
 		add_settings_field(
+			'league_lab_sincro_number',                      // Field ID
+			'Number to Sincro',                                 // Field label
+			array($this, 'display_league_lab_sincro_number'), // Function to display the field
+			'league-lab',                           // Page slug where the field will be shown
+			'league_lab_section',                  // ID of the section to which the field belongs
+			array('description' => 'Number of Leagues to sincro by hourly cron.')
+		);
+
+
+		add_settings_field(
 			'league_lab_active_leagues',              // Field ID
 			'Active Leagues',                         // Field label
 			array($this, 'display_league_lab_active_leagues_field'), // Function to display the field
@@ -179,6 +189,8 @@ class Settings
 		register_setting('league_lab_section', 'active_leagues_type');
 
 		register_setting('league_lab_section', 'league_lab_site');
+
+		register_setting('league_lab_section', 'league_lab_sincro_number');
 
 		register_setting('league_lab_section', 'league_lab_api_key');
 
@@ -277,6 +289,19 @@ class Settings
 		$site = get_option('league_lab_site');
 		echo '<input type="text" name="league_lab_site" value="' . esc_attr($site) . '" />';
 	}
+
+	public function display_league_lab_sincro_number($args)
+	{
+		$sincro_num = get_option('league_lab_sincro_number');
+		$json_array = get_option('active_leagues_list');
+		echo '<div><p style="margin-botton:5px;">'.esc_html($json_array).'</p>';
+		echo '<input type="number" name="league_lab_sincro_number" value="' . esc_attr($sincro_num) . '" />';
+		if (isset($args['description'])) {
+			echo '<p class="description" style="margin-top:15px;">' . esc_html($args['description']) . '</p>';
+		}
+		echo '</div>';
+	}
+	
 
 	public function display_league_lab_active_leagues_field($args)
 	{

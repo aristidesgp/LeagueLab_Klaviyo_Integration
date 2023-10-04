@@ -159,17 +159,17 @@ final class Helper
 			'headers' => $headers,
 			'body' => wp_json_encode($data)
 		);
-		/* Logs::register('Agregando');
-		Logs::register($arguments['email']); */		
+		Logs::register('Agregando');
+		Logs::register($arguments['email']);		
 		$response = wp_remote_post($api_url, $args);
 		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 201) {
 			$body = wp_remote_retrieve_body($response);
 			$data = json_decode($body, true);
 			return ['code' => 201, 'message' => 'Profile succefull registered in Klaviyo.', 'response'=> $data];
 		} else {
-			/* Logs::register('Error');
+			Logs::register('Error');
 			Logs::register($arguments['email']);
-			Logs::register(json_encode($response)); */
+			Logs::register(json_encode($response));
 			$body = wp_remote_retrieve_body($response);
 			$data = json_decode($body, true);			
 			return ['code' => 500, 'message' => 'Error registering profile in Klaviyo: ' . $data['errors']];
@@ -216,12 +216,14 @@ final class Helper
 
 		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
 			// Success: Profile updated in Klaviyo
+			Logs::register('Update successfully');
+			Logs::register($arguments['email']);
 			return 'Profile updated successfully in Klaviyo.';
 		} else {
 			// Error: Failed to update profile in Klaviyo
-			/* Logs::register('Error');
+			Logs::register('Update Error');
 			Logs::register($arguments['email']);
-			Logs::register(json_encode($response)); */
+			Logs::register(json_encode($response));
 			$error_message = is_wp_error($response) ? $response->get_error_message() : 'Error in the request to Klaviyo.';
 			return 'Error updating profile in Klaviyo: ' . $error_message;
 		}

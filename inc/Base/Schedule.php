@@ -39,11 +39,11 @@ class Schedule
 
         /* if ( ! wp_next_scheduled( 'llki_ten_minutes_event' ) ) {
             wp_schedule_event( time(), 'llki_ten_minutes', 'llki_ten_minutes_event' );
-        }
+        }*/
 
         if ( ! wp_next_scheduled( 'llki_one_hour_event' ) ) {
             wp_schedule_event( time(), 'hourly', 'llki_one_hour_event' );
-        } */
+        }
     }
 
     function llki_deactivate_cron() {
