@@ -97,6 +97,31 @@ final class Helper
 		}
 	}
 
+	public static function get_LeagueLab_Individuals($site, $token, $league)
+	{
+
+		$api_url = 'https://api.leaguelab.com/v1/sites/'.$site.'/leagues/'.$league.'/individuals';
+		$headers = array(
+			'X-Client-Token' => $token,
+		);
+
+		$args = array(
+			'headers' => $headers
+		);
+
+		$response = wp_remote_get($api_url, $args);
+
+		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+			$body = wp_remote_retrieve_body($response);
+			$individuals = json_decode($body);
+
+			return $individuals;
+		} else {
+
+			$error_message = is_wp_error($response) ? $response->get_error_message() : 'League Lab Error.';
+			return ['code' => 500, 'message' => 'Error to get individuals from League Lab ' . $error_message];
+		}
+	}
 	public static function getKlaviyoProfiles($klaviyo_api_key, $email)
 	{
 
