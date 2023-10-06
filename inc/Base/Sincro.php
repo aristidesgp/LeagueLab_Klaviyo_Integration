@@ -76,13 +76,14 @@ class Sincro
 			$klaviyo_api_key = get_option('klaviyo_api_key');
 			$klaviyo_list_id = get_option('klaviyo_list_id');
 			$add_with_consent = get_option('klaviyo_add_with_consent');
+			$teamc=null;
 
 			$league = Helper::get_LeagueLabLeaguesById($site, $league_lab_api_key, $leagueId)->leagues[0];
 
 			$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $leagueId);
 
 			foreach ($teamsByLeague->teams as $keyt => $team) {
-
+				$teamc=$team;
 				foreach ($team->players as $keyp => $player) {
 
 					$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
@@ -120,17 +121,17 @@ class Sincro
 			$individualsLeague = Helper::get_LeagueLab_Individuals($site, $league_lab_api_key, $leagueId);
 
 			foreach ($individualsLeague->individuals as $key => $individual) {
-				//if ($individual->team_id == null) {
+				if ($individual->team_id == null) {
 					$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $individual->email);
 					$profileId = 0;
-					$team['team_name']='';
-					$team['registration_status']='';
+					$teamc->team_name='';
+					$teamc->registration_status='';
 					
 					if (count($profile->data) == 0) {
 						//add new
-						$profileId = $this->add_klaviyo_profile($individual, $league, $team, $klaviyo_api_key);
+						$profileId = $this->add_klaviyo_profile($individual, $league, $teamc, $klaviyo_api_key);
 					} else {
-						$profileId = $this->update_klaviyo_profile($profile, $league, $team, $individual, $klaviyo_api_key);
+						$profileId = $this->update_klaviyo_profile($profile, $league, $teamc, $individual, $klaviyo_api_key);
 					}
 					if (!is_null($profileId)) {
 						if ($add_with_consent == 1) {
@@ -152,7 +153,7 @@ class Sincro
 							$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
 						}
 					}
-				//}
+				}
 			}
 			return true;
 		} catch (\Throwable $th) {
@@ -163,6 +164,9 @@ class Sincro
 
 	public function add_klaviyo_profile($player, $league, $team, $klaviyo_api_key)
 	{
+		$captain=0;
+		if (property_exists($player, 'captain'))
+			$captain=$player->captain;
 		$arguments = [
 			'email'			=>	$player->email,
 			'phone'			=>	$player->phone,
@@ -170,7 +174,7 @@ class Sincro
 			'last_name'		=>	$player->last_name,
 			'league_name'	=>	[$league->name],
 			'team_name'		=>	[$team->team_name],
-			'is_captain'	=>	$player->captain,
+			'is_captain'	=>	$captain,
 			'team_status'	=>	[$team->registration_status],
 			'player_status'	=>	[$player->player_status],
 		];
@@ -252,8 +256,9 @@ class Sincro
 			$phoneNumber = $profile->data[0]->attributes->phone_number;
 		else
 			$phoneNumber = '+1' . $phoneNumber;
-
-
+		$captain=0;
+		if (property_exists($player, 'captain'))
+			$captain=$player->captain;
 		//update
 		$arguments = [
 			'email'			=>	$player->email,
@@ -262,7 +267,7 @@ class Sincro
 			'last_name'		=>	$player->last_name,
 			'league_name'	=>	$profileLeagues,
 			'team_name'		=>	$profileTeams,
-			'is_captain'	=>	$player->captain,
+			'is_captain'	=>	$captain,
 			'player_status'	=>	$profilePstatus,
 			'team_status'	=>	$profileTstatus,
 			'profile_id'	=>	$profile->data[0]->id
