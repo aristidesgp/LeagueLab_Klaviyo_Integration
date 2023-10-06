@@ -62,15 +62,7 @@ class Sincro
 				}
 			}
 		}
-		update_option('active_leagues_list', json_encode($active_leagues));
-
-
-		/* $active_leagues_type = get_option('active_leagues_type');
-		if ($active_leagues_type === '2') {
-			return $this->llki_sync_by_name();
-		} else {
-			return $this->llki_sync_by_id();
-		} */
+		update_option('active_leagues_list', json_encode($active_leagues));		
 	}
 
 	public function llki_hour_sync($leagueId)
@@ -100,7 +92,7 @@ class Sincro
 						//add new
 						$profileId = $this->add_klaviyo_profile($player, $league, $team, $klaviyo_api_key);
 					} else {
-						$profileId= $this->update_klaviyo_profile($profile,$league,$team,$player, $klaviyo_api_key);
+						$profileId = $this->update_klaviyo_profile($profile, $league, $team, $player, $klaviyo_api_key);
 					}
 					if (!is_null($profileId)) {
 						if ($add_with_consent == 1) {
@@ -109,8 +101,8 @@ class Sincro
 									'email' => array('MARKETING'),
 									'sms' => array('MARKETING')
 								),
-								'email' => $arguments['email'],
-								'phone_number' => $arguments['phone'],
+								'email' => $player->email,
+								'phone_number' => $player->phone,
 								'profile_id' => $profileId
 							)];
 							$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
@@ -123,6 +115,44 @@ class Sincro
 						}
 					}
 				}
+			}
+
+			$individualsLeague = Helper::get_LeagueLab_Individuals($site, $league_lab_api_key, $leagueId);
+
+			foreach ($individualsLeague->individuals as $key => $individual) {
+				//if ($individual->team_id == null) {
+					$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $individual->email);
+					$profileId = 0;
+					$team['team_name']='';
+					$team['registration_status']='';
+					
+					if (count($profile->data) == 0) {
+						//add new
+						$profileId = $this->add_klaviyo_profile($individual, $league, $team, $klaviyo_api_key);
+					} else {
+						$profileId = $this->update_klaviyo_profile($profile, $league, $team, $individual, $klaviyo_api_key);
+					}
+					if (!is_null($profileId)) {
+						if ($add_with_consent == 1) {
+							$prof = [array(
+								'channels' => array(
+									'email' => array('MARKETING'),
+									'sms' => array('MARKETING')
+								),
+								'email' => $individual->email,
+								'phone_number' => $individual->phone,
+								'profile_id' => $profileId
+							)];
+							$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+						} else {
+							$prof = [array(
+								'type' => 'profile',
+								'id' => $profileId
+							)];
+							$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+						}
+					}
+				//}
 			}
 			return true;
 		} catch (\Throwable $th) {
@@ -149,7 +179,7 @@ class Sincro
 		$profileId = $newP['response']['data']['id'];
 		return $profileId;
 	}
-	public function update_klaviyo_profile($profile,$league,$team, $player, $klaviyo_api_key)
+	public function update_klaviyo_profile($profile, $league, $team, $player, $klaviyo_api_key)
 	{
 		$latribute = 'League Name';
 		$tatribute = 'Team Name';
@@ -454,8 +484,9 @@ class Sincro
 			$playersNumber = 0;
 
 			foreach ($activeLeagues as $key => $active) {
+				$this->llki_hour_sync($active);
 				//Logs::register($active);
-				$league = Helper::get_LeagueLabLeaguesById($site, $league_lab_api_key, $active)->leagues[0];
+				/* $league = Helper::get_LeagueLabLeaguesById($site, $league_lab_api_key, $active)->leagues[0];
 
 				$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $active);
 
@@ -597,7 +628,7 @@ class Sincro
 							}
 						}
 					}
-				}
+				} */
 			}
 
 			return [
