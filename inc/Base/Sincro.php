@@ -265,11 +265,16 @@ class Sincro
 			'phone'			=>	$phoneNumber,
 			'first_name'	=>	$player->first_name,
 			'last_name'		=>	$player->last_name,
+			'league_id'		=> $league->id,
 			'league_name'	=>	$profileLeagues,
+			'current_league'=>	$league->name,
 			'team_name'		=>	$profileTeams,
+			'current_team'	=>	$team->name,
 			'is_captain'	=>	$captain,
 			'player_status'	=>	$profilePstatus,
+			'current_p_status'=>$player->player_status,
 			'team_status'	=>	$profileTstatus,
+			'current_t_status'=>$team->registration_status,
 			'profile_id'	=>	$profile->data[0]->id
 		];
 		$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);

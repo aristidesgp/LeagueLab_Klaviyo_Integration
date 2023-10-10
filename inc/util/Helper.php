@@ -32,7 +32,7 @@ final class Helper
 
 		if ($err) {
 			return "cURL Error #:" . $err;
-		} else {			
+		} else {
 			return json_decode($response);
 		}
 	}
@@ -42,7 +42,7 @@ final class Helper
 		$curl = curl_init();
 
 		curl_setopt_array($curl, [
-			CURLOPT_URL => "https://api.leaguelab.com/v1/sites/" . $site . "/leagues-info/".$leagueId,
+			CURLOPT_URL => "https://api.leaguelab.com/v1/sites/" . $site . "/leagues-info/" . $leagueId,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_ENCODING => "",
 			CURLOPT_MAXREDIRS => 10,
@@ -62,7 +62,7 @@ final class Helper
 
 		if ($err) {
 			return "cURL Error #:" . $err;
-		} else {			
+		} else {
 			return json_decode($response);
 		}
 	}
@@ -100,7 +100,7 @@ final class Helper
 	public static function get_LeagueLab_Individuals($site, $token, $league)
 	{
 
-		$api_url = 'https://api.leaguelab.com/v1/sites/'.$site.'/leagues/'.$league.'/individuals';
+		$api_url = 'https://api.leaguelab.com/v1/sites/' . $site . '/leagues/' . $league . '/individuals';
 		$headers = array(
 			'X-Client-Token' => $token,
 		);
@@ -160,13 +160,13 @@ final class Helper
 			'content-type' => 'application/json',
 			'revision' => '2023-06-15'
 		);
-		
+
 		$data = array(
 			'data' => array(
 				'type' => 'profile',
 				'attributes' => array(
 					'email' => $arguments['email'],
-					'phone_number' => '+1'. $arguments['phone'],
+					'phone_number' => '+1' . $arguments['phone'],
 					'first_name' => $arguments['first_name'],
 					'last_name' => $arguments['last_name'],
 					'properties' => array(
@@ -185,23 +185,24 @@ final class Helper
 			'body' => wp_json_encode($data)
 		);
 		Logs::register('Agregando');
-		Logs::register($arguments['email']);		
+		Logs::register($arguments['email']);
 		$response = wp_remote_post($api_url, $args);
 		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 201) {
 			$body = wp_remote_retrieve_body($response);
 			$data = json_decode($body, true);
-			return ['code' => 201, 'message' => 'Profile succefull registered in Klaviyo.', 'response'=> $data];
+			return ['code' => 201, 'message' => 'Profile succefull registered in Klaviyo.', 'response' => $data];
 		} else {
 			Logs::register('Error');
 			Logs::register($arguments['email']);
 			Logs::register(json_encode($response));
 			$body = wp_remote_retrieve_body($response);
-			$data = json_decode($body, true);			
+			$data = json_decode($body, true);
 			return ['code' => 500, 'message' => 'Error registering profile in Klaviyo: ' . $data['errors']];
 		}
 	}
 
-	public static function updateKlaviyoProfile($klaviyo_api_key, $arguments){		 
+	public static function updateKlaviyoProfile($klaviyo_api_key, $arguments)
+	{
 
 		$api_url = 'https://a.klaviyo.com/api/profiles/' . $arguments['profile_id'] . '/';
 		$headers = array(
@@ -222,10 +223,14 @@ final class Helper
 					'last_name' => $arguments['last_name'],
 					'properties' => array(
 						'League Name' => $arguments['league_name'],
+						'League Name ' . $arguments['league_id'] => $arguments['current_league'],
 						'Team Name' => $arguments['team_name'],
+						'Team Name ' . $arguments['league_id'] => $arguments['current_team'],
 						'Captain' => $arguments['is_captain'],
 						'Player Status' => $arguments['player_status'],
-						'Team Status' => $arguments['team_status']
+						'Player Status ' . $arguments['league_id'] => $arguments['current_p_status'],
+						'Team Status' => $arguments['team_status'],
+						'Player Status ' . $arguments['league_id'] => $arguments['current_t_status']
 					)
 				)
 			)
@@ -254,7 +259,7 @@ final class Helper
 		}
 	}
 	public static function subscribeProfilesToKlaviyoList($klaviyo_api_key, $list_id, $profiles)
-	{		
+	{
 
 		$api_url = 'https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs/';
 		$headers = array(
@@ -282,7 +287,7 @@ final class Helper
 
 		$response = wp_remote_post($api_url, $args);
 
-		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 202) {			
+		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 202) {
 			return 'Profiles suscribed successfully in Klaviyo list.';
 		} else {
 			// Error: Failed to register profiles in Klaviyo list
@@ -294,17 +299,17 @@ final class Helper
 	public static function addProfilesToKlaviyoList($klaviyo_api_key, $list_id, $profiles)
 	{
 
-		$api_url = 'https://a.klaviyo.com/api/lists/'.$list_id.'/relationships/profiles/';
+		$api_url = 'https://a.klaviyo.com/api/lists/' . $list_id . '/relationships/profiles/';
 		$headers = array(
 			'Authorization' => 'Klaviyo-API-Key ' . $klaviyo_api_key,
 			'accept' => 'application/json',
 			'content-type' => 'application/json',
 			'revision' => '2023-06-15'
 		);
-		
+
 
 		$data = array(
-			'data' => $profiles			
+			'data' => $profiles
 		);
 
 		$args = array(
@@ -325,5 +330,4 @@ final class Helper
 			return 'Error adding profiles in Klaviyo list: ' . $error_message;
 		}
 	}
-
 }
