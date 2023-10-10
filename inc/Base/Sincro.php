@@ -54,7 +54,7 @@ class Sincro
 		$league_lab_api_key = get_option('league_lab_api_key');
 		$site = get_option('league_lab_site');
 		$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);
-		$active_leagues = array();
+		$active_leagues = [64966];
 		if (isset($leagues->leagues)) {
 			foreach ($leagues->leagues as $key => $league) {
 				if ($league->status == 'In Progress') {
@@ -167,7 +167,7 @@ class Sincro
 		$captain=0;
 		if (property_exists($player, 'captain'))
 			$captain=$player->captain;
-		$arguments = [
+		$arguments = [			
 			'email'			=>	$player->email,
 			'phone'			=>	$player->phone,
 			'first_name'	=>	$player->first_name,
@@ -177,6 +177,11 @@ class Sincro
 			'is_captain'	=>	$captain,
 			'team_status'	=>	[$team->registration_status],
 			'player_status'	=>	[$player->player_status],
+			'league_id'		=> $league->id,
+			'current_league'=>	$league->name,			
+			'current_team'	=>	$team->team_name,
+			'current_p_status'=>$player->player_status,			
+			'current_t_status'=>$team->registration_status,
 		];
 
 		$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -269,7 +274,7 @@ class Sincro
 			'league_name'	=>	$profileLeagues,
 			'current_league'=>	$league->name,
 			'team_name'		=>	$profileTeams,
-			'current_team'	=>	$team->name,
+			'current_team'	=>	$team->team_name,
 			'is_captain'	=>	$captain,
 			'player_status'	=>	$profilePstatus,
 			'current_p_status'=>$player->player_status,
@@ -277,6 +282,7 @@ class Sincro
 			'current_t_status'=>$team->registration_status,
 			'profile_id'	=>	$profile->data[0]->id
 		];
+		Logs::register(json_encode($arguments));
 		$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
 		$profileId = $profile->data[0]->id;
 		return $profileId;

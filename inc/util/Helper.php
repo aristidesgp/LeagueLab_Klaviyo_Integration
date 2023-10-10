@@ -230,7 +230,7 @@ final class Helper
 						'Player Status' => $arguments['player_status'],
 						'Player Status ' . $arguments['league_id'] => $arguments['current_p_status'],
 						'Team Status' => $arguments['team_status'],
-						'Player Status ' . $arguments['league_id'] => $arguments['current_t_status']
+						'Team Status ' . $arguments['league_id'] => $arguments['current_t_status']
 					)
 				)
 			)
