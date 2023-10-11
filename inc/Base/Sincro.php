@@ -54,7 +54,7 @@ class Sincro
 		$league_lab_api_key = get_option('league_lab_api_key');
 		$site = get_option('league_lab_site');
 		$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);
-		$active_leagues = [64966];
+		$active_leagues = [];
 		if (isset($leagues->leagues)) {
 			foreach ($leagues->leagues as $key => $league) {
 				if ($league->status == 'In Progress') {
