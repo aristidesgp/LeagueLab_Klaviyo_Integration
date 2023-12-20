@@ -183,9 +183,9 @@ class Settings
 			array('description' => 'Please select active leagues.') // Description for the field
 		); */
 		register_setting('league_lab_section', 'll_active_leagues');
-		
+
 		register_setting('league_lab_section', 'league_lab_active_leagues');
-		
+
 		register_setting('league_lab_section', 'active_leagues_type');
 
 		register_setting('league_lab_section', 'league_lab_site');
@@ -237,7 +237,7 @@ class Settings
 	// Display the active leagues section
 	public function display_active_leagues($args)
 	{
-		// Get all leagues (assuming they are stored in an array called $leagues)		
+		// Get all leagues (assuming they are stored in an array called $leagues)
 		$league_lab_api_key = get_option('league_lab_api_key');
 		$site = get_option('league_lab_site');
 		$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);
@@ -300,8 +300,10 @@ class Settings
 			echo '<p class="description" style="margin-top:15px;">' . esc_html($args['description']) . '</p>';
 		}
 		echo '</div>';
+
+		//error_get_last();
 	}
-	
+
 
 	public function display_league_lab_active_leagues_field($args)
 	{
@@ -323,7 +325,7 @@ class Settings
 		echo '<textarea name="league_lab_active_leagues" rows="5" cols="50">' . esc_textarea(implode("\n", $active_leagues)) . '</textarea>';
 		echo '<p class="description">Enter each league name on a separate line.</p>';
 		echo '</div>';
-	
+
 		// Display the select field using the $leagues array
 		$league_lab_api_key = get_option('league_lab_api_key');
 		$site = get_option('league_lab_site');
@@ -339,7 +341,7 @@ class Settings
 			$leagueId = $league->id;
 			$leagueStatus='';
 			foreach ($league->divisions as $key => $division) {
-				$leagueStatus.=' /<strong> DIVISION:</strong> '.$division->name.' <strong>TEAM STATUS:</strong>'.$division->team_status;				
+				$leagueStatus.=' /<strong> DIVISION:</strong> '.$division->name.' <strong>TEAM STATUS:</strong>'.$division->team_status;
 			}
 			$leagueName = $league->name;
 
@@ -349,16 +351,16 @@ class Settings
 				echo ' checked';
 			}
 			echo '> ' . esc_html($leagueName) . ' => ' . esc_html($leagueId). ' => ' . $leagueStatus. ' => ' . $leagueStatus;
-			echo '</label><br>';		
+			echo '</label><br>';
 
-						
+
 		}
 		echo '</div>';
 		echo '<p class="description" style="margin-top:15px;">Please select active leagues.</p>';
 		echo '</div>';
 		echo '<input type="hidden" id="active_l_t_h" name="active_leagues_type" value="' . esc_attr($active_leagues_type) . '">';
-		
-		
+
+
 	}
 
 
@@ -390,14 +392,14 @@ class Settings
         }else{
             $this->llki_SincroByLeagueId();
         }
-        
+
     }
 
 	public function llki_SincroByLeagueName()
 	{
 		try {
 			return;
-			//League Lab vars			
+			//League Lab vars
 			$league_lab_api_key = get_option('league_lab_api_key');
 			$site = get_option('league_lab_site');
 			$active_leagues = get_option('league_lab_active_leagues');
@@ -427,10 +429,10 @@ class Settings
 
 							$teamsByLeague = Helper::get_LeagueLabTeamsByLeagues($site, $league_lab_api_key, $league->id);
 
-							foreach ($teamsByLeague->teams as $keyt => $team) {								
+							foreach ($teamsByLeague->teams as $keyt => $team) {
 
 								foreach ($team->players as $keyp => $player) {
-									
+
 									$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $player->email);
 
 									if (count($profile->data) == 0) {
@@ -445,7 +447,7 @@ class Settings
 											'is_captain'	=>	$player->captain,
 											//'team_status'	=>	'Active'
 										];
-										//$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);							
+										//$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
 									} else {
 										//update
 										$arguments = [
@@ -468,7 +470,7 @@ class Settings
 										} else {
 											//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 										}
-										var_dump(count($profilesToRegister).'<br>');
+										//var_dump(count($profilesToRegister).'<br>');
 										$profilesToRegister = array();
 									} else {
 										if ($add_with_consent == 1) {
@@ -502,7 +504,7 @@ class Settings
 					} else {
 						//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 					}
-					var_dump(count($profilesToRegister).'<br>');
+					//var_dump(count($profilesToRegister).'<br>');
 				}
 			} else {
 				Logs::register(json_encode($leagues));
@@ -515,7 +517,7 @@ class Settings
 	public function llki_SincroByLeagueId()
 	{
 		try {
-			return;		
+			return;
 			//League Lab vars
 			$league_lab_api_key = get_option('league_lab_api_key');
 			$site = get_option('league_lab_site');
@@ -539,7 +541,7 @@ class Settings
 
 				foreach ($teamsByLeague->teams as $keyt => $team) {
 
-					var_dump(count($team->players).'<br>');
+					//var_dump(count($team->players).'<br>');
 					$sum=$sum+count($team->players);
 					foreach ($team->players as $keyp => $player) {
 
@@ -557,7 +559,7 @@ class Settings
 								'is_captain'	=>	$player->captain,
 								//'team_status'	=>	'Active'
 							];
-							//$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);							
+							//$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
 						} else {
 							//update
 							$arguments = [
@@ -580,7 +582,7 @@ class Settings
 							} else {
 								//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 							}
-							var_dump(count($profilesToRegister));
+							//var_dump(count($profilesToRegister));
 							$profilesToRegister = array();
 						} else {
 							if ($add_with_consent == 1) {
@@ -603,7 +605,7 @@ class Settings
 						}
 					}
 				}
-			}			
+			}
 			if (count($profilesToRegister) > 0 && count($profilesToRegister) < $profilesNumber) {
 
 				if ($add_with_consent == 1) {
@@ -611,7 +613,7 @@ class Settings
 				} else {
 					//$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profilesToRegister);
 				}
-				var_dump(count($profilesToRegister));
+				//var_dump(count($profilesToRegister));
 			}
 		} catch (\Throwable $th) {
 			Logs::register(json_encode($th->getMessage()));

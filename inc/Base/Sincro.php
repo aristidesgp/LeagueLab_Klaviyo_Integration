@@ -54,15 +54,19 @@ class Sincro
 		$league_lab_api_key = get_option('league_lab_api_key');
 		$site = get_option('league_lab_site');
 		$leagues = Helper::get_LeagueLabLeagues($site, $league_lab_api_key);
-		$active_leagues = [];
+
+		$active_leagues = array();
 		if (isset($leagues->leagues)) {
 			foreach ($leagues->leagues as $key => $league) {
-				if ($league->status == 'In Progress') {
+				if ($league->status == 'In Progress' || $league->status=='Upcoming') {
 					$active_leagues[] = $league->id;
 				}
 			}
 		}
-		update_option('active_leagues_list', json_encode($active_leagues));		
+
+		update_option('active_leagues_list', json_encode($active_leagues));
+
+		return array('leagues' => $active_leagues,  'teams' => 0, 'players' => 3);
 	}
 
 	public function llki_hour_sync($leagueId)
@@ -126,7 +130,7 @@ class Sincro
 					$profileId = 0;
 					$teamc->team_name='';
 					$teamc->registration_status='';
-					
+
 					if (count($profile->data) == 0) {
 						//add new
 						$profileId = $this->add_klaviyo_profile($individual, $league, $teamc, $klaviyo_api_key);
@@ -167,7 +171,7 @@ class Sincro
 		$captain=0;
 		if (property_exists($player, 'captain'))
 			$captain=$player->captain;
-		$arguments = [			
+		$arguments = [
 			'email'			=>	$player->email,
 			'phone'			=>	$player->phone,
 			'first_name'	=>	$player->first_name,
@@ -177,11 +181,7 @@ class Sincro
 			'is_captain'	=>	$captain,
 			'team_status'	=>	[$team->registration_status],
 			'player_status'	=>	[$player->player_status],
-			'league_id'		=> $league->id,
-			'current_league'=>	$league->name,			
-			'current_team'	=>	$team->team_name,
-			'current_p_status'=>$player->player_status,			
-			'current_t_status'=>$team->registration_status,
+			'sports'		=>	[$league->sport]
 		];
 
 		$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -194,11 +194,15 @@ class Sincro
 		$tatribute = 'Team Name';
 		$pstatus = 'Player Status';
 		$tstatus = 'Team Status';
+		$lsport = 'Sport';
 		$profileLeagues = isset($profile->data[0]->attributes->properties->$latribute) ? $profile->data[0]->attributes->properties->$latribute : [];
 		$profileTeams = isset($profile->data[0]->attributes->properties->$tatribute) ? $profile->data[0]->attributes->properties->$tatribute : [];
 
 		$profilePstatus = isset($profile->data[0]->attributes->properties->$pstatus) ? $profile->data[0]->attributes->properties->$pstatus : [];
 		$profileTstatus = isset($profile->data[0]->attributes->properties->$tstatus) ? $profile->data[0]->attributes->properties->$tstatus : [];
+
+		$profileSports = isset($profile->data[0]->attributes->properties->$lsport) ? $profile->data[0]->attributes->properties->$lsport : [];
+
 
 		$isLeague = false;
 		if (is_array($profileLeagues)) {
@@ -256,6 +260,20 @@ class Sincro
 			$profileTstatus = [$team->registration_status];
 		}
 
+		$isSport = false;
+		if (is_array($profileSports)) {
+			foreach ($profileSports as $key => $psport) {
+				if ($psport == $league->sport) {
+					$isSport = true;
+					break;
+				}
+			}
+			if (!$isSport)
+				$profileSports[] = $league->sport;
+		} else {
+			$profileSports = [$league->sport];
+		}
+
 		$phoneNumber = $player->phone;
 		if ($phoneNumber == null)
 			$phoneNumber = $profile->data[0]->attributes->phone_number;
@@ -270,19 +288,14 @@ class Sincro
 			'phone'			=>	$phoneNumber,
 			'first_name'	=>	$player->first_name,
 			'last_name'		=>	$player->last_name,
-			'league_id'		=> $league->id,
 			'league_name'	=>	$profileLeagues,
-			'current_league'=>	$league->name,
 			'team_name'		=>	$profileTeams,
-			'current_team'	=>	$team->team_name,
 			'is_captain'	=>	$captain,
 			'player_status'	=>	$profilePstatus,
-			'current_p_status'=>$player->player_status,
 			'team_status'	=>	$profileTstatus,
-			'current_t_status'=>$team->registration_status,
-			'profile_id'	=>	$profile->data[0]->id
+			'profile_id'	=>	$profile->data[0]->id,
+			'sports'		=>  $profileSports
 		];
-		Logs::register(json_encode($arguments));
 		$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
 		$profileId = $profile->data[0]->id;
 		return $profileId;
@@ -484,7 +497,7 @@ class Sincro
 	public function llki_sync_by_id()
 	{
 		try {
-			//League Lab vars           
+			//League Lab vars
 			$league_lab_api_key = get_option('league_lab_api_key');
 			$site = get_option('league_lab_site');
 			$activeLeagues = get_option('ll_active_leagues');

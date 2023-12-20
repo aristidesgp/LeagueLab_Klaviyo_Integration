@@ -1,8 +1,8 @@
-jQuery(document).ready(function($) {	
+jQuery(document).ready(function($) {
 	// Listen for change event on the active_leagues_type select field
 	$('#active_leagues_type').change(function() {
 		var selectedValue = $(this).val();
-		$('#active_l_t_h').val(selectedValue);		
+		$('#active_l_t_h').val(selectedValue);
 		if(selectedValue==2){
 			$('#manual_active_leagues').show();
 			$('#list_active_leagues').hide();
@@ -25,12 +25,12 @@ function syncro() {
             url: ajaxurl,
             type: 'POST',
             data: {
-                action: 'manual_sync' 
+                action: 'manual_sync'
             },
             success: function(response) {
                 console.log(response);
-				var data = JSON.parse(response);				
-                if (data.success) {                    
+				var data = JSON.parse(response);
+                if (data.success) {
 					resolve(data.data);
                 } else {
 					console.log(response);
@@ -45,7 +45,7 @@ function syncro() {
     });
 
     syncPromise.then(function(additionalData) {
-		console.log(additionalData);      
+		console.log(additionalData);
 		showProgressMessage('Processed leagues => ' + additionalData.leagues);
 		showProgressMessage('Processed teams => ' + additionalData.teams);
 		showProgressMessage('Processed players => ' + additionalData.players);
@@ -53,6 +53,7 @@ function syncro() {
         jQuery('#manual-sync-button').prop('disabled', false);
         spinner.style.display = 'none';
     }).catch(function(error) {
+        console.log(error)
         showProgressMessage('Error occurred during synchronization:', error);
         jQuery('#manual-sync-button').prop('disabled', false);
         spinner.style.display = 'none';
