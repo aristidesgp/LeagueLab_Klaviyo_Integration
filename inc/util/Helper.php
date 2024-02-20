@@ -171,10 +171,14 @@ final class Helper
 					'last_name' => $arguments['last_name'],
 					'properties' => array(
 						'League Name' => $arguments['league_name'],
+						'League Name ' . $arguments['league_id'] => $arguments['current_league'],
 						'Team Name' => $arguments['team_name'],
+						'Team Name ' . $arguments['league_id'] => $arguments['current_team'],
 						'Captain' => $arguments['is_captain'],
 						'Player Status' => $arguments['player_status'],
+						'Player Status ' . $arguments['league_id'] => $arguments['current_p_status'],
 						'Team Status' => $arguments['team_status'],
+						'Team Status ' . $arguments['league_id'] => $arguments['current_t_status'],
 						'Sport'		=>$arguments['sports']
 					)
 				)
@@ -223,10 +227,14 @@ final class Helper
 					'last_name' => $arguments['last_name'],
 					'properties' => array(
 						'League Name' => $arguments['league_name'],
+						'League Name ' . $arguments['league_id'] => $arguments['current_league'],
 						'Team Name' => $arguments['team_name'],
+						'Team Name ' . $arguments['league_id'] => $arguments['current_team'],
 						'Captain' => $arguments['is_captain'],
 						'Player Status' => $arguments['player_status'],
+						'Player Status ' . $arguments['league_id'] => $arguments['current_p_status'],
 						'Team Status' => $arguments['team_status'],
+						'Team Status ' . $arguments['league_id'] => $arguments['current_t_status'],
 						'Sport'		=>$arguments['sports']
 					)
 				)

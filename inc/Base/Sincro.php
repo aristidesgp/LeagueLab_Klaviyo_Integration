@@ -181,7 +181,11 @@ class Sincro
 			'is_captain'	=>	$captain,
 			'team_status'	=>	[$team->registration_status],
 			'player_status'	=>	[$player->player_status],
-			'sports'		=>	[$league->sport]
+			'sports'		=>	[$league->sport],
+			'current_team'	=>	$team->name,
+			'current_league'=>	$league->name,
+			'current_p_status'=>$player->player_status,
+			'current_t_status'=>$team->registration_status,
 		];
 
 		$newP = Helper::registerKlaviyoProfiles($klaviyo_api_key, $arguments);
@@ -288,13 +292,18 @@ class Sincro
 			'phone'			=>	$phoneNumber,
 			'first_name'	=>	$player->first_name,
 			'last_name'		=>	$player->last_name,
+			'league_id'		=> $league->id,			
 			'league_name'	=>	$profileLeagues,
 			'team_name'		=>	$profileTeams,
 			'is_captain'	=>	$captain,
 			'player_status'	=>	$profilePstatus,
 			'team_status'	=>	$profileTstatus,
 			'profile_id'	=>	$profile->data[0]->id,
-			'sports'		=>  $profileSports
+			'sports'		=>  $profileSports,
+			'current_team'	=>	$team->name,
+			'current_league'=>	$league->name,
+			'current_p_status'=>$player->player_status,
+			'current_t_status'=>$team->registration_status,
 		];
 		$updtP = Helper::updateKlaviyoProfile($klaviyo_api_key, $arguments);
 		$profileId = $profile->data[0]->id;
