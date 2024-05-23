@@ -265,22 +265,30 @@ final class Helper
 	}
 	public static function subscribeProfilesToKlaviyoList($klaviyo_api_key, $list_id, $profiles)
 	{		
-
 		$api_url = 'https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs/';
 		$headers = array(
 			'Authorization' => 'Klaviyo-API-Key ' . $klaviyo_api_key,
 			'accept' => 'application/json',
 			'content-type' => 'application/json',
-			'revision' => '2023-06-15'
+			'revision' => '2024-02-15'
 		);
 
 		$data = array(
 			'data' => array(
 				'type' => 'profile-subscription-bulk-create-job',
 				'attributes' => array(
-					'list_id' => $list_id,
 					'custom_source' => 'Marketing Event',
-					'subscriptions' => $profiles
+					'profiles' => array(
+						'data' => $profiles
+					)
+				),
+				'relationships' => array(
+					'list' => array(
+						'data' => array(
+							'type' => 'list',
+							'id' => $list_id
+						)
+					)
 				)
 			)
 		);
@@ -291,13 +299,58 @@ final class Helper
 		);
 
 		$response = wp_remote_post($api_url, $args);
-
+		Logs::register('Subscribe to Klaviyo successfully');		
 		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 202) {			
-			return 'Profiles suscribed successfully in Klaviyo list.';
+			return 'Profiles subscribed successfully to Klaviyo list.';
 		} else {
-			// Error: Failed to register profiles in Klaviyo list
+			Logs::register(json_encode($response));
 			$error_message = is_wp_error($response) ? $response->get_error_message() : 'Error in the request to Klaviyo.';
-			return 'Error suscribing profiles in Klaviyo list: ' . $error_message;
+			return 'Error subscribing profiles to Klaviyo list: ' . $error_message;
+		}
+	}
+	
+	public static function unsubscribeProfilesFromKlaviyoList($klaviyo_api_key, $list_id, $profiles)
+	{		
+		$api_url = 'https://a.klaviyo.com/api/profile-subscription-bulk-delete-jobs/';
+		$headers = array(
+			'Authorization' => 'Klaviyo-API-Key ' . $klaviyo_api_key,
+			'accept' => 'application/json',
+			'content-type' => 'application/json',
+			'revision' => '2024-02-15'
+		);
+
+		$data = array(
+			'data' => array(
+				'type' => 'profile-subscription-bulk-delete-job',
+				'attributes' => array(
+					'profiles' => array(
+						'data' => $profiles
+					)
+				),
+				'relationships' => array(
+					'list' => array(
+						'data' => array(
+							'type' => 'list',
+							'id' => $list_id
+						)
+					)
+				)
+			)
+		);
+
+		$args = array(
+			'headers' => $headers,
+			'body' => wp_json_encode($data)
+		);
+
+		$response = wp_remote_post($api_url, $args);
+		Logs::register('UnSubscribe to Klaviyo successfully');
+		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 202) {			
+			return 'Profiles unsubscribed successfully from Klaviyo list.';
+		} else {
+			Logs::register(json_encode($response));
+			$error_message = is_wp_error($response) ? $response->get_error_message() : 'Error in the request to Klaviyo.';
+			return 'Error unsubscribing profiles from Klaviyo list: ' . $error_message;
 		}
 	}
 
@@ -325,11 +378,11 @@ final class Helper
 		$response = wp_remote_post($api_url, $args);
 
 		if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 204) {
-			//Logs::register('Profiles added successfully in Klaviyo list.');
+			Logs::register('Profiles added successfully in Klaviyo list.');
 			return 'Profiles added successfully in Klaviyo list.';
 		} else {
 			// Error: Failed to register profiles in Klaviyo list
-			//Logs::register(json_encode($response));
+			Logs::register(json_encode($response));
 			$error_message = is_wp_error($response) ? $response->get_error_message() : 'Error in the request to Klaviyo.';
 			//Logs::register('Error adding profiles in Klaviyo list: ' . $error_message);
 			return 'Error adding profiles in Klaviyo list: ' . $error_message;

@@ -71,8 +71,10 @@ class Sincro
 
 	public function llki_hour_sync($leagueId)
 	{
+		
 		try {
 			//League Lab vars
+			$leagueId=74440;
 			$league_lab_api_key = get_option('league_lab_api_key');
 			$site = get_option('league_lab_site');
 
@@ -100,23 +102,93 @@ class Sincro
 						$profileId = $this->update_klaviyo_profile($profile, $league, $team, $player, $klaviyo_api_key);
 					}
 					if (!is_null($profileId)) {
+						$profl = [array(
+							'type' => 'profile',
+							'id' => $profileId
+						)];
+						$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $profl);
 						if ($add_with_consent == 1) {
-							$prof = [array(
-								'channels' => array(
-									'email' => array('MARKETING'),
-									'sms' => array('MARKETING')
-								),
-								'email' => $player->email,
-								'phone_number' => $player->phone,
-								'profile_id' => $profileId
-							)];
-							$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
-						} else {
-							$prof = [array(
-								'type' => 'profile',
-								'id' => $profileId
-							)];
-							$subl = Helper::addProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							if($player->email_subscribed && $player->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'id' => $profileId,
+									'attributes' => array(
+										'email' => $player->email,
+										'phone_number' => '+1'.$player->phone,
+										'subscriptions' => array(
+											'email' => array(
+												'marketing' => array(
+													'consent' => 'SUBSCRIBED'
+												)
+											),
+											'sms' => array(
+												'marketing' => array(
+													'consent' => 'SUBSCRIBED'
+												)
+											)
+										)
+									)
+								)];	
+								$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if($player->email_subscribed && !$player->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'id' => $profileId,
+									'attributes' => array(
+										'email' => $player->email,										
+										'subscriptions' => array(
+											'email' => array(
+												'marketing' => array(
+													'consent' => 'SUBSCRIBED'
+												)
+											)
+										)
+									)
+								)];	
+								$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if(!$player->email_subscribed && $player->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'id' => $profileId,
+									'attributes' => array(										
+										'phone_number' => '+1'.$player->phone,
+										'subscriptions' => array(															
+											'sms' => array(
+												'marketing' => array(
+													'consent' => 'SUBSCRIBED'
+												)
+											)
+										)
+									)
+								)];	
+								$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if(!$player->email_subscribed && !$player->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'attributes' => array(
+										'email' => $player->email,
+										'phone_number' => '+1'.$player->phone,
+									)
+								)];
+								$subL = Helper::unsubscribeProfilesFromKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if($player->email_subscribed && !$player->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'attributes' => array(
+										'phone_number' => '+1'.$player->phone,
+									)
+								)];	
+								$subL = Helper::unsubscribeProfilesFromKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if(!$player->email_subscribed && $player->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'attributes' => array(
+										'email' => $player->email,																	
+									)
+								)];	
+								$subL = Helper::unsubscribeProfilesFromKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}
+						
 						}
 					}
 				}
@@ -129,6 +201,7 @@ class Sincro
 					$profile = Helper::getKlaviyoProfiles($klaviyo_api_key, $individual->email);
 					$profileId = 0;
 					$teamc->team_name='';
+					$teamc->name='';
 					$teamc->registration_status='';
 
 					if (count($profile->data) == 0) {
@@ -139,17 +212,88 @@ class Sincro
 					}
 					if (!is_null($profileId)) {
 						if ($add_with_consent == 1) {
-							$prof = [array(
-								'channels' => array(
-									'email' => array('MARKETING'),
-									'sms' => array('MARKETING')
-								),
-								'email' => $individual->email,
-								'phone_number' => $individual->phone,
-								'profile_id' => $profileId
-							)];
-							$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
-						} else {
+							if($individual->email_subscribed && $individual->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'id' => $profileId,
+									'attributes' => array(
+										'email' => $individual->email,
+										'phone_number' => $individual->phone,
+										'subscriptions' => array(
+											'email' => array(
+												'marketing' => array(
+													'consent' => 'SUBSCRIBED'
+												)
+											),
+											'sms' => array(
+												'marketing' => array(
+													'consent' => 'SUBSCRIBED'
+												)
+											)
+										)
+									)
+								)];	
+								$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if($individual->email_subscribed && !$individual->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'id' => $profileId,
+									'attributes' => array(
+										'email' => $individual->email,										
+										'subscriptions' => array(
+											'email' => array(
+												'marketing' => array(
+													'consent' => 'SUBSCRIBED'
+												)
+											)
+										)
+									)
+								)];	
+								$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if(!$individual->email_subscribed && $individual->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'id' => $profileId,
+									'attributes' => array(										
+										'phone_number' => $individual->phone,
+										'subscriptions' => array(															
+											'sms' => array(
+												'marketing' => array(
+													'consent' => 'SUBSCRIBED'
+												)
+											)
+										)
+									)
+								)];	
+								$subL = Helper::subscribeProfilesToKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if(!$individual->email_subscribed && !$individual->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'attributes' => array(
+										'email' => $individual->email,
+										'phone_number' => $individual->phone,
+									)
+								)];
+								$subL = Helper::unsubscribeProfilesFromKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if($individual->email_subscribed && !$individual->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'attributes' => array(
+										'phone_number' => $individual->phone,
+									)
+								)];	
+								$subL = Helper::unsubscribeProfilesFromKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}else if(!$individual->email_subscribed && $individual->phone_subscribed){
+								$prof = [array(
+									'type' => 'profile',
+									'attributes' => array(
+										'email' => $individual->email,																	
+									)
+								)];	
+								$subL = Helper::unsubscribeProfilesFromKlaviyoList($klaviyo_api_key, $klaviyo_list_id, $prof);
+							}
+						
+						}else {
 							$prof = [array(
 								'type' => 'profile',
 								'id' => $profileId
@@ -182,7 +326,8 @@ class Sincro
 			'team_status'	=>	[$team->registration_status],
 			'player_status'	=>	[$player->player_status],
 			'sports'		=>	[$league->sport],
-			'current_team'	=>	$team->name,
+			'league_id'		=> $league->id,
+			'current_team'	=>	$team->team_name,
 			'current_league'=>	$league->name,
 			'current_p_status'=>$player->player_status,
 			'current_t_status'=>$team->registration_status,
@@ -292,7 +437,6 @@ class Sincro
 			'phone'			=>	$phoneNumber,
 			'first_name'	=>	$player->first_name,
 			'last_name'		=>	$player->last_name,
-			'league_id'		=> $league->id,			
 			'league_name'	=>	$profileLeagues,
 			'team_name'		=>	$profileTeams,
 			'is_captain'	=>	$captain,
@@ -300,7 +444,8 @@ class Sincro
 			'team_status'	=>	$profileTstatus,
 			'profile_id'	=>	$profile->data[0]->id,
 			'sports'		=>  $profileSports,
-			'current_team'	=>	$team->name,
+			'league_id'		=> $league->id,
+			'current_team'	=>	$team->team_name,
 			'current_league'=>	$league->name,
 			'current_p_status'=>$player->player_status,
 			'current_t_status'=>$team->registration_status,
